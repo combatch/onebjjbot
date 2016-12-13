@@ -1,0 +1,11 @@
+let config = {
+  development: {
+    token: 'asdf'
+  },
+  production: {
+    token: 'asdf'
+  }
+}
+
+module.exports = config;
+
