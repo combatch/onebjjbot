@@ -1,16 +1,18 @@
 let config = require('./config/config');
 let winston = require('./middleware/winston');
 let singleMiddleWareTest = require('./middleware/singleMiddleWareTest');
-let complexMiddleWare = require('./middleware/complexMiddleWare');
+let Complex = require('./middleware/complexMiddleWare');
 let env = process.env.NODE_ENV || 'development';
 
 const Telegraf = require('telegraf');
 const bot = new Telegraf(config[`${env}`]['token']);
+const complexMiddleWare = new Complex();
 
 // middlewares
 bot.use(Telegraf.memorySession());
 bot.use(singleMiddleWareTest); // has a single function
-bot.use(complexMiddleWare); // idea is to have multiple functions
+bot.use(complexMiddleWare.time); // idea is to have multiple functions
+bot.use(complexMiddleWare.otherExample); // idea is to have multiple functions
 
 
 
