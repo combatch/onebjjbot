@@ -2,17 +2,81 @@ let config = require('./config/config');
 let winston = require('./middleware/winston');
 let singleMiddleWareTest = require('./middleware/singleMiddleWareTest');
 let Complex = require('./middleware/complexMiddleWare');
+let utils = require('./middleware/utils');
+
 let env = process.env.NODE_ENV || 'development';
+
+let Horseman = require('node-horseman');
+
+let fs = require('fs');
+let path = require('path');
+let URL = require('url');
+let dir = __dirname + '/tmp/'
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir)
+}
+
+
 
 const Telegraf = require('telegraf');
 const bot = new Telegraf(config[`${env}`]['token']);
 const complexMiddleWare = new Complex();
+// const UTILs = new utils();
 
 // middlewares
 bot.use(Telegraf.memorySession());
 bot.use(singleMiddleWareTest); // has a single function
 bot.use(complexMiddleWare.time); // idea is to have multiple functions
 bot.use(complexMiddleWare.otherExample); // idea is to have multiple functions
+// bot.use(UTILs); // idea is to have multiple functions
+
+
+
+bot.hears(/capture (.+)/i, (ctx) => {
+
+  winston.log('debug', ctx.from);
+  winston.log('debug', 'chat : ', ctx.chat);
+  winston.log('debug', 'regex : ', ctx.match[1]);
+
+  ctx.replyWithHTML(`<strong>your regex:</strong> is ${ctx.match[1]}`)
+
+});
+
+bot.hears(/ss (.+)/,  (ctx) => {
+
+  let website = ctx.match[1];
+  winston.log('debug', website);
+  let parsedUrl = URL.parse(website);
+  let horseman = new Horseman();
+
+  horseman
+    .viewport(3200,1800)
+    .zoom(2)
+    .open('http://www.horsemanjs.org')
+    .log('something')
+    .screenshot(__dirname + 'big.png')
+    .close();
+
+  // horseman
+  //   .viewport(1600, 900)
+  //   .zoom(2)
+  //   .open(parsedUrl)
+  //   .log('i here')
+  //   .waitForNextPage()
+  //   .screenshot(__dirname + `/tmp/${parsedUrl}.png`)
+  //   .then(() => {
+  //       winston.log('debug', 'in the then function');
+  //     // var Screenshot = __dirname + `/tmp/${parsedUrl}.png`;
+
+  //     // ctx.replyWithHTML(`<strong>your regex:</strong> is ${ctx.match[1]}`)
+  //     // bot.sendPhoto(fromId, Screenshot, { caption: `btc price as of ${date}` });
+  //   })
+  //   .close();
+
+
+})
+
+
 
 
 
@@ -30,9 +94,19 @@ bot.on('text', (ctx) => {
 })
 
 
+bot.hears(/shie+t/i, (ctx) => {
+  winston.log('debug', 'context : ', ctx);
 
-bot.catch((err) =>{
-    winston.log('error',  err);
+});
+
+
+
+
+bot.catch((err) => {
+  winston.log('error', err);
 })
 
 bot.startPolling()
+
+
+module.exports = bot;
