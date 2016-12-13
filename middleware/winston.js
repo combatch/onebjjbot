@@ -12,7 +12,7 @@ winston.configure({
         prettyPrint: true
       }),
       new(winston.transports.File)({
-        filename: 'logs/postgresIndexjs.log',
+        filename: 'logs/telegrambot.log',
         level: 'info'
       })
     ]
