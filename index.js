@@ -1,25 +1,16 @@
 let config = require('./config/config');
 let winston = require('./middleware/winston');
-let singleMiddlewareTest = require('./middleware/singleMiddlewareTest');
-let Complex = require('./middleware/complexMiddleware');
 let Stocks = require('./middleware/stockMiddleware');
 let env = process.env.NODE_ENV || 'development';
 
 const Telegraf = require('telegraf');
 const bot = new Telegraf(config[`${env}`]['token']);
-const complexMiddleware = new Complex();
 const stocksMiddleware = new Stocks();
 
 // middlewares
 bot.use(Telegraf.memorySession());
-// bot.use(stocksMiddleware.getStocks); // has a single function
-bot.use(complexMiddleware.time); // idea is to have multiple functions
-// bot.use(complexMiddleware.otherExample); // idea is to have multiple functions
-
 bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
-
-	winston.log('debug','test2');
-
+	winston.log('debug','symbol: ' + ctx.match[1]);
 });
 
 bot.command('start', (ctx) => ctx.reply('Hey')) // type '/start'
