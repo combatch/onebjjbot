@@ -1,10 +1,13 @@
 let config = require('./config/config');
 let winston = require('./middleware/winston');
+let singleMiddleWareTest = require('./middleware/singleMiddleWareTest');
+let Complex = require('./middleware/complexMiddleWare');
 let Stocks = require('./middleware/stockMiddleware');
 let env = process.env.NODE_ENV || 'development';
 
 const Telegraf = require('telegraf');
 const bot = new Telegraf(config[`${env}`]['token']);
+const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
 
 // middlewares
@@ -12,6 +15,9 @@ bot.use(Telegraf.memorySession());
 bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
 	winston.log('debug','symbol: ' + ctx.match[1]);
 });
+// bot.use(singleMiddleWareTest); // has a single function
+// bot.use(complexMiddleWare.time); // idea is to have multiple functions
+// bot.use(complexMiddleWare.otherExample); // idea is to have multiple functions
 
 bot.command('start', (ctx) => ctx.reply('Hey')) // type '/start'
 bot.on('sticker', (ctx) => ctx.reply('👍')) // emojis work
