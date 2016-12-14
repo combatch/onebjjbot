@@ -1,4 +1,5 @@
 node_modules/*
+tmp/*
 npm-debug.log
 config/config.js
 logs/telegrambot.log
