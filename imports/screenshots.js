@@ -6,19 +6,26 @@ import _ from 'lodash';
 import winston from 'winston';
 
 let dir = path.resolve(`tmp/`);
-console.info(dir);
 if (!fs.existsSync(dir)) {
   fs.mkdirsSync(dir);
 }
 
-
+/** Class representing screenshots. */
 class ScreenShots {
 
+  /**
+   * description would be here.
+   */
   constructor() {
-    winston.log('debug', 'inside constructor');
   }
 
-  createScreenshot(ctx, next) {
+
+  /**
+   * creates a screenshot to the tmp directory.
+   * @param {object} ctx - telegraf context object.
+   * @return {boolean} i dunno lol.
+   */
+  createScreenshot(ctx) {
 
     winston.log('debug', 'inside create screenshot method');
 
@@ -48,8 +55,8 @@ class ScreenShots {
       })
       .close();
 
+    return true;
   }
-
 
 
 }

@@ -37,9 +37,9 @@ bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
 
 bot.hears(/ss (.+)/, (ctx) => {
 
-  winston.log('debug', 'in the ss function');
-  const ss = new ScreenShots();
-  ss.createScreenshot(ctx);
+  winston.log('debug', 'in the ss function'); // left debug messages for now
+  const ss = new ScreenShots(); // the class
+  ss.createScreenshot(ctx); // the method
 
 })
 

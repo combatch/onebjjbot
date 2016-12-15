@@ -26,7 +26,6 @@
   },
   "homepage": "https://github.com/combatch/onebjjbot#readme",
   "dependencies": {
-
     "babel-polyfill": "^6.20.0",
     "babel-cli": "^6.18.0",
     "babel-eslint": "^7.1.1",
@@ -44,5 +43,8 @@
     "url": "^0.11.0",
     "winston": "^2.3.0",
     "winston-papertrail": "^1.0.4"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.4.3"
   }
 }
