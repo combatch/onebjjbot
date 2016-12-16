@@ -1,11 +1,20 @@
 let config = {
   development: {
-    token: 'asdf'
+    "token": "asdf",
+    "HOST": "localhost",
+    "DBNAME": "postgres",
+    "PORT": "5432",
+    "USER": "postgres",
+    "PASSWORD": "asdfasdfasdfasd"
   },
   production: {
-    token: 'asdf'
+    "token": "asdf",
+    "HOST": "host",
+    "DBNAME": "postgres",
+    "PORT": "5432",
+    "USER": "postgres",
+    "PASSWORD": "asdfasdfasdfasd"
   }
 }
 
-module.exports = config;
-
+export default config;
