@@ -29,8 +29,6 @@ const stocksMiddleware = new Stocks();
 bot.use(Telegraf.memorySession());
 
 
-
-
 bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
   winston.log('debug', 'symbol: ' + ctx.match[1]);
 });
