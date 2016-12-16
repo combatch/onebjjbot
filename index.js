@@ -3,6 +3,7 @@ import winston from './middleware/winston';
 import Complex from './middleware/complexMiddleWare';
 import Stocks from './middleware/stockMiddleware';
 import ScreenShots from './imports/screenshots';
+import Users from './imports/users';
 
 let env = process.env.NODE_ENV || 'development';
 
@@ -41,6 +42,14 @@ bot.hears(/ss (.+)/, (ctx) => {
 
 })
 
+
+bot.command('register', (ctx) => {
+
+  winston.log('debug', 'in register command');
+  const user = new Users();
+  user.createUser(ctx);
+
+});
 
 
 
