@@ -25,21 +25,39 @@ class Users {
    * @param {object} ctx - telegraf context object.
    * @return {boolean} true if successful.
    */
-  createUser(ctx) {
+  registerUser(ctx) {
 
-    winston.log('debug', ctx.message);
-    let userId = ctx.message.from.id;
-    let name = ctx.message.from.first_name;
-    let group = ctx.chat.type == 'group' ? ctx.chat.id : '';
-    winston.log('debug', name, group);
+    let User = {
+      first_name: ctx.message.from.first_name,
+      last_name: ctx.message.from.last_name || '',
+      telegram_id: ctx.message.from.id,
+      group_id: ctx.chat.type == 'group' ? ctx.chat.id : ''
+    };
 
-    console.log(Users.getUserbyId(31) );
+    knex.transaction(function(t) {
+        return knex('Users')
+          .transacting(t)
+          .insert({
+            first_name: User.first_name,
+            last_name: User.last_name,
+            telegram_id: User.telegram_id,
+            group_id: User.group_id
+          })
+          .then(t.commit)
+          .catch(function(err) {
+            t.rollback();
 
-
-
-    // run getUserbyID
-    // if exists, return 'already registered'.
-    // else , insert to db
+            winston.log('info', 'already exists', err);
+            ctx.reply(`${User.first_name} is already registered.`);
+            throw err;
+          })
+      })
+      .then(function(test) {
+        ctx.reply(`${User.first_name} has been registered.`);
+      })
+      .catch(function(err) {
+        winston.log('info', 'in the catch', err);
+      });
 
   }
 
@@ -50,22 +68,24 @@ class Users {
    * @return {obj} returns user obj.
    */
   static getUserbyId(id) {
-    knex('Users')
-      .where('id', id)
-      .first()
-      .then((data) => {
-        winston.log('debug', 'getuser function', data)
-        if (_.isEmpty(data)) {
-          winston.log('debug', 'empty object in here');
-          return false;
-        }
-      })
-      .catch(function(err) {
-        winston.log('info', err);
-      })
+    let promise = new Promise(function(resolve, reject) {
+      knex('Users')
+        .where('telegram_id', id)
+        .first()
+        .then((data) => {
+          winston.log('debug', 'getuser function', data)
+          if (_.isEmpty(data)) {
+            winston.log('debug', 'empty object in here');
+          }
 
-    return true; // not supposed to always returns true....
+          return data;
+        })
+        .catch(function(err) {
+          winston.log('info', err);
+        })
+    })
   }
+
 
 
   /**
