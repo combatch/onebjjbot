@@ -10,13 +10,14 @@ class FileStreams {
   constructor(ctx) {
     this.ctx = ctx;
   }
-  insertLoader (ctx) {
+
+  insertLoader(ctx) {
     let loader = fs.createReadStream(loadingGif);
 
     ctx.replyWithVideo({ source: loader }, { reply_to_message_id: ctx.message.message_id })
     winston.log('debug', 'inside insert loader function');
 
-    ctx.getChatMember('173516336').then( (data) => {
+    ctx.getChatMember('173516336').then((data) => {
       winston.log('debug', data);
     })
   }

@@ -118,12 +118,58 @@ class Users {
    * @return {array} an array of the usernames and scores.
    */
   getLeaderboard(ctx) {
+    // /leaderboard endpoint
+    // takes in groupid param
+    // generate leaderboard on front-end
+    // send as image.
 
 
+
+    let group = ctx.chat.id;
+    let title = ctx.chat.title;
+
+    if (ctx.message.chat.type != 'private') {
+
+      knex('Users')
+        .where({
+          group_id: group
+        })
+        .whereNotNull('points')
+        .limit(5)
+        .orderBy('points', 'desc')
+        .then((data) => {
+
+          let cleanObj = _.map(data, formatObject);
+          winston.log('debug', 'data is', cleanObj);
+
+          let text = cleanObj.map((data, index) => {
+            let string = '';
+            string += `${index + 1} : <i>${data.name}</i> -- ${data.points}`;
+            if (index === 0) {
+              string += ' 👑';
+            }
+            return string;
+          })
+          text = text.join('\n');
+
+          ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true });
+        })
+        .catch(function(err) {
+          winston.log('error', err);
+        })
+    }
   }
 
 
 }
 
+function formatObject(dirtyObj) {
+  let obj = {};
+  obj['name'] = dirtyObj.first_name;
+  obj['points'] = dirtyObj.points;
+
+  winston.log('debug', 'in formatObject function');
+  return obj;
+}
 
 export default Users;

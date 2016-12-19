@@ -9,24 +9,12 @@ import Files from './imports/fileStreams';
 
 let env = process.env.NODE_ENV || 'development';
 
-
-// loading middleware
-// inserts loading gif
-// edits comment to delete it when complete
-// maybe some form of progress bar in the future
-//
-// command without regex match middleware
-// spits out documentation if no match
-// user enters "/stocks "
-// bot replies with
-// "usage: /stocks <ticker>" or something.
-
-
 const Telegraf = require('telegraf');
 const bot = new Telegraf(config[`${env}`]['token']);
 const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
 const migrations = new Knex();
+const user = new Users();
 
 migrations.migrateLatest();
 
@@ -39,7 +27,7 @@ bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
   winston.log('debug', 'symbol: ' + ctx.match[1]);
 });
 
-bot.hears(/ss (.+)/, (ctx) => {
+bot.hears(/\/ss (.+)/, (ctx) => {
 
   winston.log('debug', 'in the ss function'); // left debug messages for now
   const ss = new ScreenShots(); // the class
@@ -51,24 +39,28 @@ bot.hears(/ss (.+)/, (ctx) => {
 bot.command('register', (ctx) => {
 
   winston.log('debug', 'in register command');
-  const user = new Users();
   user.registerUser(ctx);
 
 });
 
 
 
-bot.command('test', (ctx) => {
-
-  winston.log('debug', 'in test command');
-  const files = new Files();
-  files.insertLoader(ctx);
-
+bot.command('leaderboard', (ctx) => {
+  user.getLeaderboard(ctx);
 });
 
 
 
+bot.on('message', (ctx) => {
+  if (ctx.message.reply_to_message) {
+    if (ctx.message.text == 'lol') {
+      let userId = ctx.from.id;
+      // insert inline buttons with emojis
+      // increment
 
+    }
+  }
+});
 
 
 bot.catch((err) => {
