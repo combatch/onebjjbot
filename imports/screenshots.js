@@ -4,6 +4,7 @@ import Horseman from 'node-horseman';
 import URL from 'url';
 import _ from 'lodash';
 import winston from 'winston';
+import Jimp from 'jimp';
 
 let dir = path.resolve(`tmp/`);
 if (!fs.existsSync(dir)) {
@@ -16,8 +17,7 @@ class ScreenShots {
   /**
    * description would be here.
    */
-  constructor() {
-  }
+  constructor() {}
 
 
   /**
@@ -35,7 +35,11 @@ class ScreenShots {
     let cleanUrl = (parsedUrl.protocol == null ? `http://${website}` : website)
     let cleanString = (parsedUrl.protocol == 'https:' ? _.replace(website, "https://", '') : _.replace(website, "http://", ''));
     let dirString = _.replace(cleanString, /\/+/g, "-");
-    let screenshot = `${dir}/${dirString}.png`;
+    dirString = _.replace(dirString, /[?=]/g, "");
+    dirString = _.replace(dirString, /[&=]/g, "");
+    let screenshotDir = `${dir}/${dirString}.png`;
+
+
     let horseman = new Horseman();
 
     horseman
@@ -43,11 +47,23 @@ class ScreenShots {
       .zoom(2)
       .open(cleanUrl)
       .waitForNextPage()
-      .screenshot(screenshot)
+      .screenshot(screenshotDir)
       .then(() => {
         winston.log('info', 'screenshot saved', cleanString);
-        let ss = fs.createReadStream(screenshot);
-        ctx.replyWithPhoto({ source: ss }, { caption: `screenshot of ${cleanUrl}`, disable_notification: true });
+
+        Jimp.read(screenshotDir)
+          .then((img) => {
+            img.scaleToFit(3100, 4000)
+              .quality(80)
+              .write(screenshotDir, (img) => {
+                ctx.replyWithPhoto({ source: screenshotDir }, { caption: `screenshot of ${cleanUrl}`, disable_notification: true });
+              })
+          })
+          .catch((err) => {
+            ctx.reply(`${err}`, { reply_to_message_id: ctx.message.message_id })
+            winston.log('error', err);
+          })
+
       })
       .catch((err) => {
         ctx.reply(`an error occured with that URL. check logs for more info`, { reply_to_message_id: ctx.message.message_id })

@@ -34,30 +34,41 @@ class Users {
       group_id: ctx.chat.type == 'group' ? ctx.chat.id : ''
     };
 
-    knex.transaction(function(t) {
-        return knex('Users')
-          .transacting(t)
-          .insert({
-            first_name: User.first_name,
-            last_name: User.last_name,
-            telegram_id: User.telegram_id,
-            group_id: User.group_id
-          })
-          .then(t.commit)
-          .catch(function(err) {
-            t.rollback();
+    knex('Users')
+      .where('telegram_id', ctx.message.from.id)
+      .asCallback((err, rows) => {
+        if (err) return console.error(err);
+        if (_.isEmpty(rows)) {
+          knex.transaction(function(t) {
+              return knex('Users')
+                .transacting(t)
+                .insert({
+                  first_name: User.first_name,
+                  last_name: User.last_name,
+                  telegram_id: User.telegram_id,
+                  group_id: User.group_id
+                })
+                .then(t.commit)
+                .catch(function(err) {
+                  t.rollback();
+                  winston.log('info', 'in first transaction catch ', err);
+                  ctx.reply(`${err} `);
+                  throw err;
+                })
+            })
+            .then(function() {
+              ctx.reply(`${User.first_name} has been registered.`);
+            })
+            .catch(function(err) {
+              winston.log('info', 'in the catch', err);
+              ctx.reply(`${err} `);
+            });
+        } else {
+          ctx.reply(`${User.first_name} is already registered.`);
+        }
 
-            winston.log('info', 'already exists', err);
-            ctx.reply(`${User.first_name} is already registered.`);
-            throw err;
-          })
-      })
-      .then(function(test) {
-        ctx.reply(`${User.first_name} has been registered.`);
-      })
-      .catch(function(err) {
-        winston.log('info', 'in the catch', err);
       });
+
 
   }
 

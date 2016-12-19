@@ -27,7 +27,7 @@ const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
 const migrations = new Knex();
 
-migrations.migrateLatest();
+//migrations.migrateLatest();
 
 
 // middlewares
@@ -61,6 +61,7 @@ bot.command('register', (ctx) => {
 
 
 bot.catch((err) => {
+  winston.log('debug', 'in bot catch error');
   winston.log('error', err);
 })
 
