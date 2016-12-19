@@ -31,43 +31,56 @@ class Users {
       first_name: ctx.message.from.first_name,
       last_name: ctx.message.from.last_name || '',
       telegram_id: ctx.message.from.id,
-      group_id: ctx.chat.type == 'group' ? ctx.chat.id : ''
+      group_id: ctx.chat.type != 'private' ? ctx.chat.id : '',
+      group_type: ctx.chat.type,
+      group_title: ctx.chat.title
     };
 
-    knex('Users')
-      .where('telegram_id', ctx.message.from.id)
-      .asCallback((err, rows) => {
-        if (err) return console.error(err);
-        if (_.isEmpty(rows)) {
-          knex.transaction(function(t) {
-              return knex('Users')
-                .transacting(t)
-                .insert({
-                  first_name: User.first_name,
-                  last_name: User.last_name,
-                  telegram_id: User.telegram_id,
-                  group_id: User.group_id
-                })
-                .then(t.commit)
-                .catch(function(err) {
-                  t.rollback();
-                  winston.log('info', 'in first transaction catch ', err);
-                  ctx.reply(`${err} `);
-                  throw err;
-                })
-            })
-            .then(function() {
-              ctx.reply(`${User.first_name} has been registered.`);
-            })
-            .catch(function(err) {
-              winston.log('info', 'in the catch', err);
-              ctx.reply(`${err} `);
-            });
-        } else {
-          ctx.reply(`${User.first_name} is already registered.`);
-        }
+    if (ctx.message.chat.type != 'private') {
 
-      });
+      knex('Users')
+        .where({
+          telegram_id: ctx.message.from.id,
+          group_id: ctx.chat.id
+        })
+        .asCallback((err, rows) => {
+          if (err) return console.error(err);
+          if (_.isEmpty(rows)) {
+            knex.transaction(function(t) {
+                return knex('Users')
+                  .transacting(t)
+                  .insert({
+                    first_name: User.first_name,
+                    last_name: User.last_name,
+                    telegram_id: User.telegram_id,
+                    group_id: User.group_id,
+                    group_type: User.group_type,
+                    group_title: User.group_title
+                  })
+                  .then(t.commit)
+                  .catch(function(err) {
+                    t.rollback();
+                    winston.log('error', 'in first transaction catch ', err);
+                    ctx.reply(`${err} `);
+                    throw err;
+                  })
+              })
+              .then(function() {
+                ctx.replyWithHTML(`<b>${User.first_name}</b> has been registered.`, { reply_to_message_id: ctx.message.message_id })
+              })
+              .catch(function(err) {
+                winston.log('error', 'in the catch', err);
+                ctx.reply(`${err} `);
+              });
+          } else {
+            ctx.replyWithHTML(`<b>${User.first_name}</b> is already registered.`, { reply_to_message_id: ctx.message.message_id })
+          }
+
+        });
+
+    } else {
+      ctx.replyWithHTML(`command not available in private chat.`, { reply_to_message_id: ctx.message.message_id })
+    }
 
 
   }
@@ -92,7 +105,7 @@ class Users {
           return data;
         })
         .catch(function(err) {
-          winston.log('info', err);
+          winston.log('error', err);
         })
     })
   }

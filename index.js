@@ -5,6 +5,7 @@ import Stocks from './middleware/stockMiddleware';
 import Knex from './imports/knex';
 import ScreenShots from './imports/screenshots';
 import Users from './imports/users';
+import Files from './imports/fileStreams';
 
 let env = process.env.NODE_ENV || 'development';
 
@@ -27,7 +28,7 @@ const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
 const migrations = new Knex();
 
-//migrations.migrateLatest();
+migrations.migrateLatest();
 
 
 // middlewares
@@ -52,6 +53,16 @@ bot.command('register', (ctx) => {
   winston.log('debug', 'in register command');
   const user = new Users();
   user.registerUser(ctx);
+
+});
+
+
+
+bot.command('test', (ctx) => {
+
+  winston.log('debug', 'in test command');
+  const files = new Files();
+  files.insertLoader(ctx);
 
 });
 
