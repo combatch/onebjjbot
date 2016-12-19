@@ -2,24 +2,23 @@ exports.up = function(knex, Promise) {
 
   return Promise.all([
 
-    knex.schema.raw(`
-        CREATE TABLE "Users" (
-            "id" int PRIMARY KEY,
-            "first_name" varchar(255),
-            "last_name" varchar(255),
-            "username" varchar(255),
-            "role" varchar(255),
-            "rank" varchar(255),
-            "points" int
-        );
-        CREATE TABLE "Groups" (
-            "id" int PRIMARY KEY,
-            "title" varchar(255),
-            "type" varchar(255),
-            "user_id" int,
-            FOREIGN KEY("user_id") REFERENCES "Users" ("id")
-        );
-        `)
+    knex.schema.createTable('Users', function(table) {
+      table.increments('id').primary();
+      table.integer('telegram_id');
+      table.string('first_name');
+      table.string('last_name');
+      table.string('username');
+      table.string('role');
+      table.string('rank');
+      table.string('group_title');
+      table.string('group_type');
+      table.integer('group_id');
+      table.integer('points');
+      table.boolean('Active');
+      table.timestamp('created_at').defaultTo(knex.fn.now());
+      table.timestamp('modified_at').defaultTo(knex.fn.now());
+    })
+
 
   ])
 
@@ -28,7 +27,6 @@ exports.up = function(knex, Promise) {
 exports.down = function(knex, Promise) {
 
   return Promise.all([
-    knex.schema.dropTable('Groups'),
     knex.schema.dropTable('Users')
   ])
 

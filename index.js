@@ -2,7 +2,9 @@ import config from './config/config';
 import winston from './middleware/winston';
 import Complex from './middleware/complexMiddleWare';
 import Stocks from './middleware/stockMiddleware';
+import Knex from './imports/knex';
 import ScreenShots from './imports/screenshots';
+import Users from './imports/users';
 
 let env = process.env.NODE_ENV || 'development';
 
@@ -23,6 +25,9 @@ const Telegraf = require('telegraf');
 const bot = new Telegraf(config[`${env}`]['token']);
 const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
+const migrations = new Knex();
+
+//migrations.migrateLatest();
 
 
 // middlewares
@@ -42,12 +47,21 @@ bot.hears(/ss (.+)/, (ctx) => {
 })
 
 
+bot.command('register', (ctx) => {
+
+  winston.log('debug', 'in register command');
+  const user = new Users();
+  user.registerUser(ctx);
+
+});
+
 
 
 
 
 
 bot.catch((err) => {
+  winston.log('debug', 'in bot catch error');
   winston.log('error', err);
 })
 
