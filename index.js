@@ -1,5 +1,6 @@
 import config from './config/config';
 import winston from './middleware/winston';
+import Vote from './middleware/voteMiddleWare';
 import Complex from './middleware/complexMiddleWare';
 import Stocks from './middleware/stockMiddleware';
 import Knex from './imports/knex';
@@ -22,6 +23,9 @@ migrations.migrateLatest();
 
 // middlewares
 bot.use(Telegraf.memorySession());
+
+
+
 
 
 bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
@@ -52,7 +56,7 @@ bot.command('leaderboard', (ctx) => {
 
 
 
-bot.on('message', (ctx) => {
+bot.on('message',  (ctx) => {
   if (ctx.message.reply_to_message) {
 
     if (ctx.message.text == 'lol') {
@@ -60,51 +64,66 @@ bot.on('message', (ctx) => {
       let replyTo = ctx.message.reply_to_message.from.id;
       let originalMessageId = ctx.message.reply_to_message.message_id;
 
-      winston.log('debug', 'user id of person saying lol ', userId);
-      winston.log('debug', 'user id of original message ', replyTo);
-      // insert inline buttons with emojis
-      // increment
+      return ctx.reply('<b>Coke</b> or <i>Pepsi?</i>', Extra
+        .inReplyTo(originalMessageId)
+        .notifications(false)
+        .HTML()
+        .markup(
+          Markup.inlineKeyboard([
+            Markup.callbackButton('😂', 'tearsofjoy'),
+            Markup.callbackButton('👍', 'thumbsup'),
+            Markup.callbackButton('🙄', 'eyeroll'),
+            Markup.callbackButton('🔥', 'fire'),
+            Markup.callbackButton('😊', 'smiling')
+          ])))
 
-      let keyboardArray = JSON.stringify({
-        inline_keyboard: [
-          [{ text: `😂`, callback_data: 'tearsofjoy' },
-            { text: `👍`, callback_data: 'thumbsup' },
-            { text: `🙄`, callback_data: 'eyeroll' },
-            { text: `🔥`, callback_data: 'fire' },
-            { text: `😊`, callback_data: 'smiling' }
-          ]
-        ]
-      });
-
-      ctx.reply('test', { reply_to_message_id: originalMessageId, reply_markup: keyboardArray });
 
 
     }
   }
 });
 
-//
+// bot.on('message', (ctx) => {
+//   if (ctx.message.reply_to_message) {
 
-bot.action('tearsofjoy', (ctx, next) => {
-  let increment = 1;
+//     if (ctx.message.text == 'lol') {
+//       let userId = ctx.from.id;
+//       let replyTo = ctx.message.reply_to_message.from.id;
+//       let originalMessageId = ctx.message.reply_to_message.message_id;
 
-  let keyboardArray = JSON.stringify({
-    inline_keyboard: [
-      [{ text: `😂${increment}`, callback_data: 'tearsofjoy' },
-        { text: `👍`, callback_data: 'thumbsup' },
-        { text: `🙄`, callback_data: 'eyeroll' },
-        { text: `🔥`, callback_data: 'fire' },
-        { text: `😊`, callback_data: 'smiling' }
-      ]
-    ]
-  });
+//       winston.log('debug', 'user id of person saying lol ', userId);
+//       winston.log('debug', 'user id of original message ', replyTo);
+//       // insert inline buttons with emojis
+//       // increment
 
-  ctx.answerCallbackQuery('selected 😂')
+//       let keyboardArray = JSON.stringify({
+//         inline_keyboard: [
+//           [{ text: `😂`, callback_data: 'tearsofjoy' },
+//             { text: `👍`, callback_data: 'thumbsup' },
+//             { text: `🙄`, callback_data: 'eyeroll' },
+//             { text: `🔥`, callback_data: 'fire' },
+//             { text: `😊`, callback_data: 'smiling' }
+//           ]
+//         ]
+//       });
+
+//       ctx.reply('test', { reply_to_message_id: originalMessageId, reply_markup: keyboardArray });
+
+
+//     }
+//   }
+// });
+
+
+bot.action('tearsofjoy', Vote, (ctx, next) => {
+  // console.log(ctx.update);
+  return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
-      winston.log('debug', 'in here');
-      ctx.editMessageReplyMarkup(keyboardArray);
+      winston.log('debug', 'in the then function');
+
     })
     .then(next);
+
 })
 bot.action('thumbsup', (ctx, next) => {
   ctx.answerCallbackQuery('selected 👍').then(next);
