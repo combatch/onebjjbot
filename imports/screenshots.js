@@ -41,6 +41,7 @@ class ScreenShots {
 
 
     let horseman = new Horseman();
+    ctx.replyWithChatAction('upload_photo');
 
     horseman
       .viewport(3100, 1800)
