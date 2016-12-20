@@ -10,6 +10,7 @@ import Files from './imports/fileStreams';
 let env = process.env.NODE_ENV || 'development';
 
 const Telegraf = require('telegraf');
+const { Extra, Markup } = Telegraf;
 const bot = new Telegraf(config[`${env}`]['token']);
 const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
@@ -53,14 +54,70 @@ bot.command('leaderboard', (ctx) => {
 
 bot.on('message', (ctx) => {
   if (ctx.message.reply_to_message) {
+
     if (ctx.message.text == 'lol') {
       let userId = ctx.from.id;
+      let replyTo = ctx.message.reply_to_message.from.id;
+      let originalMessageId = ctx.message.reply_to_message.message_id;
+
+      winston.log('debug', 'user id of person saying lol ', userId);
+      winston.log('debug', 'user id of original message ', replyTo);
       // insert inline buttons with emojis
       // increment
+
+      let keyboardArray = JSON.stringify({
+        inline_keyboard: [
+          [{ text: `😂`, callback_data: 'tearsofjoy' },
+            { text: `👍`, callback_data: 'thumbsup' },
+            { text: `🙄`, callback_data: 'eyeroll' },
+            { text: `🔥`, callback_data: 'fire' },
+            { text: `😊`, callback_data: 'smiling' }
+          ]
+        ]
+      });
+
+      ctx.reply('test', { reply_to_message_id: originalMessageId, reply_markup: keyboardArray });
+
 
     }
   }
 });
+
+//
+
+bot.action('tearsofjoy', (ctx, next) => {
+  let increment = 1;
+
+  let keyboardArray = JSON.stringify({
+    inline_keyboard: [
+      [{ text: `😂${increment}`, callback_data: 'tearsofjoy' },
+        { text: `👍`, callback_data: 'thumbsup' },
+        { text: `🙄`, callback_data: 'eyeroll' },
+        { text: `🔥`, callback_data: 'fire' },
+        { text: `😊`, callback_data: 'smiling' }
+      ]
+    ]
+  });
+
+  ctx.answerCallbackQuery('selected 😂')
+    .then(() => {
+      winston.log('debug', 'in here');
+      ctx.editMessageReplyMarkup(keyboardArray);
+    })
+    .then(next);
+})
+bot.action('thumbsup', (ctx, next) => {
+  ctx.answerCallbackQuery('selected 👍').then(next);
+})
+bot.action('eyeroll', (ctx, next) => {
+  ctx.answerCallbackQuery('selected 🙄').then(next);
+})
+bot.action('fire', (ctx, next) => {
+  ctx.answerCallbackQuery('selected 🔥').then(next);
+})
+bot.action('smiling', (ctx, next) => {
+  ctx.answerCallbackQuery('selected 😊').then(next);
+})
 
 
 bot.catch((err) => {

@@ -135,7 +135,7 @@ class Users {
           group_id: group
         })
         .whereNotNull('points')
-        .limit(5)
+        .limit(15)
         .orderBy('points', 'desc')
         .then((data) => {
 
