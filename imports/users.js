@@ -160,6 +160,61 @@ class Users {
     }
   }
 
+  upvoteUser(ctx) {
+
+    let id = ctx.update.callback_query.message.reply_to_message.from.id;
+    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
+    let chatId = ctx.update.callback_query.message.chat.id;
+
+
+    winston.log('info', 'attempting to Upvote user');
+    knex('Users')
+      .where({
+        telegram_id: id,
+        group_id: chatId
+      })
+      .increment('points', 1)
+      .asCallback((err, rows) => {
+        if (err) return console.error(err);
+        if (rows == 0) {
+          ctx.reply(`${name} needs to /register`, { disable_notification: true });
+        } else {
+          winston.log('info', `${name} has been upvoted in group ${chatId}`);
+        }
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+      })
+
+  }
+
+
+  downvoteUser(ctx) {
+
+    let id = ctx.update.callback_query.message.reply_to_message.from.id;
+    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
+    let chatId = ctx.update.callback_query.message.chat.id;
+
+    winston.log('info', 'attempting to Downvote user');
+    knex('Users')
+      .where({
+        telegram_id: id,
+        group_id: chatId
+      })
+      .decrement('points', 1)
+      .asCallback((err, rows) => {
+        if (err) return console.error(err);
+        if (rows == 0) {
+          ctx.reply(`${name} needs to /register`, { disable_notification: true });
+        } else {
+          winston.log('info', `${name} has been downvoted in group ${chatId}`);
+        }
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+      })
+
+  }
 
 }
 
