@@ -53,6 +53,7 @@ class Users {
                     first_name: User.first_name,
                     last_name: User.last_name,
                     telegram_id: User.telegram_id,
+                    points: 0,
                     group_id: User.group_id,
                     group_type: User.group_type,
                     group_title: User.group_title
