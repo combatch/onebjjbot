@@ -1,5 +1,6 @@
 import config from './config/config';
 import winston from './middleware/winston';
+import Vote from './middleware/voteMiddleWare';
 import Complex from './middleware/complexMiddleWare';
 import Stocks from './middleware/stockMiddleware';
 import Knex from './imports/knex';
@@ -55,7 +56,7 @@ bot.command('leaderboard', (ctx) => {
 
 
 
-bot.on('message', (ctx) => {
+bot.on('message',  (ctx) => {
   if (ctx.message.reply_to_message) {
 
     if (ctx.message.text == 'lol') {
@@ -114,13 +115,12 @@ bot.on('message', (ctx) => {
 // });
 
 
-bot.action('tearsofjoy', (ctx, next) => {
-
-
-  console.log(ctx.update);
+bot.action('tearsofjoy', Vote, (ctx, next) => {
+  // console.log(ctx.update);
   return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
-      winston.log('debug', 'in here')
+      winston.log('debug', 'in the then function');
+
     })
     .then(next);
 
