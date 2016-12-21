@@ -188,7 +188,7 @@ class Users {
           if (name.toLowerCase() == botName.toLowerCase()) {
             ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
           } else {
-            ctx.reply(`${name} needs to /register`, { disable_notification: true });
+            ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
           }
 
         } else {
@@ -227,7 +227,7 @@ class Users {
           if (name.toLowerCase() == botName.toLowerCase()) {
             ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
           } else {
-            ctx.reply(`${name} needs to /register`, { disable_notification: true });
+            ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
           }
 
         } else {
@@ -241,6 +241,7 @@ class Users {
 
   }
 
+
 }
 
 function formatObject(dirtyObj) {
@@ -253,7 +254,7 @@ function formatObject(dirtyObj) {
 }
 
 function Increment(x) {
-    return ++x;
+  return ++x;
 }
 
 

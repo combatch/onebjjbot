@@ -54,7 +54,6 @@ bot.command('register', (ctx) => {
 });
 
 
-
 bot.command('leaderboard', (ctx) => {
   user.getLeaderboard(ctx);
 });
@@ -76,9 +75,7 @@ bot.on('message', (ctx) => {
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
       let originalMessageId = ctx.message.reply_to_message.message_id;
-      winston.log('debug', 'stuff', userId);
-      winston.log('debug', 'stuff', replyTo);
-      winston.log('debug', 'stuff', originalMessageId);
+
       if (userId == replyTo) {
         return ctx.reply('cant vote for yourself');
       } else {
@@ -113,22 +110,34 @@ bot.action('tearsofjoy', (ctx, next) => {
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
-    .then(() =>{
+    .then(() => {
+      // increment not working
+      // working in this block instead of vote.reBuildButtons until its working
+      //
+      // logic
+      // push data to array
+      // get a count of the data
+      // {tearsofjoy: 2} or  { userId: 123, data: tearsofjoy},{ userId: 5234, data: tearsofjoy},
+      // callback button represents emoji + the count
+      // new buttons rebuilt on each button press (to count for upvote/downvote)
+
+
+
       let increment = increment || 0;
       increment++;
 
       ctx.editMessageText('<i>choose a button to upvote</i>', Extra
-            .notifications(true)
-            .HTML()
-            .markup(
-              Markup.inlineKeyboard([
-                Markup.callbackButton(`😂${increment}`, 'tearsofjoy'),
-                Markup.callbackButton(`👍${increment}`, 'thumbsup'),
-                Markup.callbackButton(`❤${increment}`, 'heart'),
-                Markup.callbackButton(`🔥${increment}`, 'fire'),
-                Markup.callbackButton(`👏${increment}`, 'clap'),
-                Markup.callbackButton(`😀${increment}`, 'grin')
-              ])));
+        .notifications(true)
+        .HTML()
+        .markup(
+          Markup.inlineKeyboard([
+            Markup.callbackButton(`😂${increment}`, 'tearsofjoy'),
+            Markup.callbackButton(`👍${increment}`, 'thumbsup'),
+            Markup.callbackButton(`❤${increment}`, 'heart'),
+            Markup.callbackButton(`🔥${increment}`, 'fire'),
+            Markup.callbackButton(`👏${increment}`, 'clap'),
+            Markup.callbackButton(`😀${increment}`, 'grin')
+          ])));
 
       // vote.reBuildButtons(ctx);
     })
@@ -139,7 +148,7 @@ bot.action('thumbsup', (ctx, next) => {
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
-    .then(() =>{
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);
@@ -149,7 +158,7 @@ bot.action('heart', (ctx, next) => {
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
-    .then(() =>{
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);;
@@ -159,7 +168,7 @@ bot.action('fire', (ctx, next) => {
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
-    .then(() =>{
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);
@@ -169,7 +178,7 @@ bot.action('clap', (ctx, next) => {
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
-    .then(() =>{
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);
@@ -179,7 +188,7 @@ bot.action('grin', (ctx, next) => {
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
-    .then(() =>{
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);
