@@ -161,11 +161,13 @@ class Users {
     }
   }
 
-  upvoteUser(ctx) {
+  upvoteUser(ctx, botName, voterId) {
 
     let id = ctx.update.callback_query.message.reply_to_message.from.id;
     let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
     let chatId = ctx.update.callback_query.message.chat.id;
+
+    let counter = counter || 0;
 
 
     winston.log('info', 'attempting to Upvote user');
@@ -176,10 +178,24 @@ class Users {
       })
       .increment('points', 1)
       .asCallback((err, rows) => {
+        winston.log('debug', counter);
+        Increment(counter);
+        winston.log('debug', counter);
+
+
         if (err) return console.error(err);
         if (rows == 0) {
-          ctx.reply(`${name} needs to /register`, { disable_notification: true });
+          if (name.toLowerCase() == botName.toLowerCase()) {
+            ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+          } else {
+            ctx.reply(`${name} needs to /register`, { disable_notification: true });
+          }
+
         } else {
+
+          if (id == voterId) {
+            ctx.editMessageText(`cannot vote for yourself`).catch((err) => winston.log('error', err));
+          }
           winston.log('info', `${name} has been upvoted in group ${chatId}`);
         }
       })
@@ -187,14 +203,16 @@ class Users {
         winston.log('error', err);
       })
 
+
   }
 
 
-  downvoteUser(ctx) {
+  downvoteUser(ctx, botName, voterId) {
 
     let id = ctx.update.callback_query.message.reply_to_message.from.id;
     let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
     let chatId = ctx.update.callback_query.message.chat.id;
+
 
     winston.log('info', 'attempting to Downvote user');
     knex('Users')
@@ -206,7 +224,12 @@ class Users {
       .asCallback((err, rows) => {
         if (err) return console.error(err);
         if (rows == 0) {
-          ctx.reply(`${name} needs to /register`, { disable_notification: true });
+          if (name.toLowerCase() == botName.toLowerCase()) {
+            ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+          } else {
+            ctx.reply(`${name} needs to /register`, { disable_notification: true });
+          }
+
         } else {
           winston.log('info', `${name} has been downvoted in group ${chatId}`);
         }
@@ -214,6 +237,7 @@ class Users {
       .catch(function(err) {
         winston.log('error', err);
       })
+
 
   }
 
@@ -227,5 +251,10 @@ function formatObject(dirtyObj) {
   winston.log('debug', 'in formatObject function');
   return obj;
 }
+
+function Increment(x) {
+    return ++x;
+}
+
 
 export default Users;

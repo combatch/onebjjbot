@@ -26,7 +26,7 @@ migrations.migrateLatest();
 bot.use(Telegraf.memorySession());
 
 bot.telegram.getMe().then((botInfo) => {
-  bot.options.username = botInfo.username
+  bot.options.username = botInfo.username;
 })
 
 
@@ -67,26 +67,36 @@ bot.on('message', (ctx) => {
   let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
   let upvoteRegEx = new RegExp(upvote, "ig");
+  let lmao = "l+m+a+o+";
+  let lmaoRegEx = new RegExp(lmao, "ig");
 
   if (ctx.message.reply_to_message) {
-    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || ctx.message.text == 'haha') {
+    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha') {
+
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
       let originalMessageId = ctx.message.reply_to_message.message_id;
+      winston.log('debug', 'stuff', userId);
+      winston.log('debug', 'stuff', replyTo);
+      winston.log('debug', 'stuff', originalMessageId);
+      if (userId == replyTo) {
+        return ctx.reply('cant vote for yourself');
+      } else {
+        return ctx.reply('<i>choose a button to upvote</i>', Extra
+          .inReplyTo(originalMessageId)
+          .notifications(false)
+          .HTML()
+          .markup(
+            Markup.inlineKeyboard([
+              Markup.callbackButton('😂', 'tearsofjoy'),
+              Markup.callbackButton('👍', 'thumbsup'),
+              Markup.callbackButton('❤', 'heart'),
+              Markup.callbackButton('🔥', 'fire'),
+              Markup.callbackButton('👏', 'clap'),
+              Markup.callbackButton('😀', 'grin')
+            ])))
+      }
 
-      return ctx.reply('<i>choose a button to upvote</i>', Extra
-        .inReplyTo(originalMessageId)
-        .notifications(false)
-        .HTML()
-        .markup(
-          Markup.inlineKeyboard([
-            Markup.callbackButton('😂', 'tearsofjoy'),
-            Markup.callbackButton('👍', 'thumbsup'),
-            Markup.callbackButton('❤️', 'heart'),
-            Markup.callbackButton('🔥', 'fire'),
-            Markup.callbackButton('👏', 'clap'),
-            Markup.callbackButton('😀', 'grin')
-          ])))
 
     }
   }
@@ -95,44 +105,82 @@ bot.on('message', (ctx) => {
 
 
 bot.action('tearsofjoy', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
+  winston.log('debug', data);
+
   return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() =>{
+      let increment = increment || 0;
+      increment++;
+
+      ctx.editMessageText('<i>choose a button to upvote</i>', Extra
+            .notifications(true)
+            .HTML()
+            .markup(
+              Markup.inlineKeyboard([
+                Markup.callbackButton(`😂${increment}`, 'tearsofjoy'),
+                Markup.callbackButton(`👍${increment}`, 'thumbsup'),
+                Markup.callbackButton(`❤${increment}`, 'heart'),
+                Markup.callbackButton(`🔥${increment}`, 'fire'),
+                Markup.callbackButton(`👏${increment}`, 'clap'),
+                Markup.callbackButton(`😀${increment}`, 'grin')
+              ])));
+
+      // vote.reBuildButtons(ctx);
     })
     .then(next);
 })
 bot.action('thumbsup', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 👍')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() =>{
+      vote.reBuildButtons(ctx);
     })
     .then(next);
 })
 bot.action('heart', (ctx, next) => {
   return ctx.answerCallbackQuery('selected ❤')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() =>{
+      vote.reBuildButtons(ctx);
     })
     .then(next);;
 })
 bot.action('fire', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 🔥')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() =>{
+      vote.reBuildButtons(ctx);
     })
     .then(next);
 })
 bot.action('clap', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 👏')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() =>{
+      vote.reBuildButtons(ctx);
     })
     .then(next);
 })
 bot.action('grin', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 😀')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() =>{
+      vote.reBuildButtons(ctx);
     })
     .then(next);
 })
