@@ -100,11 +100,22 @@ bot.on('message', (ctx) => {
 });
 
 
+const state = {
+  upvoted: false,
+  downvoted: false,
+  tearsofjoy: 0,
+  thumbsup: 0,
+  heart: 0,
+  fire: 0,
+  clap: 0,
+  grin: 0
+}
 
 bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
-  winston.log('debug', data);
+  winston.log('debug', ctx.update);
+
 
   return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
@@ -120,23 +131,42 @@ bot.action('tearsofjoy', (ctx, next) => {
       // {tearsofjoy: 2} or  { userId: 123, data: tearsofjoy},{ userId: 5234, data: tearsofjoy},
       // callback button represents emoji + the count
       // new buttons rebuilt on each button press (to count for upvote/downvote)
+      winston.log('debug', state);
+
+      if (!state.upvoted  & !state.downvoted ) {
+        state.upvoted = !state.upvoted;
+        state.downvoted = false;
+      }
+      if (state.upvoted) {
+        state.tearsofjoy++;
+        state.upvoted = !state.upvoted;
+        state.downvoted = !state.downvoted;
+      }
+      else if(state.downvoted){
+        state.tearsofjoy--;
+        state.upvoted = !state.upvoted;
+        state.downvoted = !state.downvoted;
+      }
+      else{
+        state.votes;
+      }
 
 
+      winston.log('debug', state);
 
-      let increment = increment || 0;
-      increment++;
+
 
       ctx.editMessageText('<i>choose a button to upvote</i>', Extra
         .notifications(true)
         .HTML()
         .markup(
           Markup.inlineKeyboard([
-            Markup.callbackButton(`😂${increment}`, 'tearsofjoy'),
-            Markup.callbackButton(`👍${increment}`, 'thumbsup'),
-            Markup.callbackButton(`❤${increment}`, 'heart'),
-            Markup.callbackButton(`🔥${increment}`, 'fire'),
-            Markup.callbackButton(`👏${increment}`, 'clap'),
-            Markup.callbackButton(`😀${increment}`, 'grin')
+            Markup.callbackButton(`😂${state.tearsofjoy}`, 'tearsofjoy'),
+            Markup.callbackButton(`👍`, 'thumbsup'),
+            Markup.callbackButton(`❤`, 'heart'),
+            Markup.callbackButton(`🔥`, 'fire'),
+            Markup.callbackButton(`👏`, 'clap'),
+            Markup.callbackButton(`😀`, 'grin')
           ])));
 
       // vote.reBuildButtons(ctx);
