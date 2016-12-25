@@ -69,7 +69,9 @@ bot.on('message', (ctx) => {
   let lmao = "l+m+a+o+";
   let lmaoRegEx = new RegExp(lmao, "ig");
 
+
   if (ctx.message.reply_to_message) {
+
     if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha') {
 
       let userId = ctx.from.id;
@@ -78,21 +80,23 @@ bot.on('message', (ctx) => {
 
       if (userId == replyTo) {
         return ctx.reply('cant vote for yourself');
-      } else {
-        return ctx.reply('<i>choose a button to upvote</i>', Extra
-          .inReplyTo(originalMessageId)
-          .notifications(false)
-          .HTML()
-          .markup(
-            Markup.inlineKeyboard([
-              Markup.callbackButton('😂', 'tearsofjoy'),
-              Markup.callbackButton('👍', 'thumbsup'),
-              Markup.callbackButton('❤', 'heart'),
-              Markup.callbackButton('🔥', 'fire'),
-              Markup.callbackButton('👏', 'clap'),
-              Markup.callbackButton('😀', 'grin')
-            ])))
       }
+
+
+      return ctx.reply('<i>choose a button to upvote</i>', Extra
+        .inReplyTo(originalMessageId)
+        .notifications(false)
+        .HTML()
+        .markup(
+          Markup.inlineKeyboard([
+            Markup.callbackButton('😂', 'tearsofjoy'),
+            Markup.callbackButton('👍', 'thumbsup'),
+            Markup.callbackButton('❤', 'heart'),
+            Markup.callbackButton('🔥', 'fire'),
+            Markup.callbackButton('👏', 'clap'),
+            Markup.callbackButton('😀', 'grin')
+          ])))
+
 
 
     }
@@ -100,28 +104,19 @@ bot.on('message', (ctx) => {
 });
 
 
-const state = {
-  upvoted: false,
-  downvoted: false,
-  tearsofjoy: 0,
-  thumbsup: 0,
-  heart: 0,
-  fire: 0,
-  clap: 0,
-  grin: 0
-}
-
 bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
-
-  winston.log('debug', ctx.update);
-
 
   return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
     .then(() => {
+      vote.castVote(ctx);
+    })
+    .then(() => {
+      user.countVotes(ctx, data);
+
       // increment not working
       // working in this block instead of vote.reBuildButtons until its working
       //
@@ -131,52 +126,56 @@ bot.action('tearsofjoy', (ctx, next) => {
       // {tearsofjoy: 2} or  { userId: 123, data: tearsofjoy},{ userId: 5234, data: tearsofjoy},
       // callback button represents emoji + the count
       // new buttons rebuilt on each button press (to count for upvote/downvote)
-      winston.log('debug', state);
+      // winston.log('debug', state);
 
-      if (!state.upvoted  & !state.downvoted ) {
-        state.upvoted = !state.upvoted;
-        state.downvoted = false;
-      }
-      if (state.upvoted) {
-        state.tearsofjoy++;
-        state.upvoted = !state.upvoted;
-        state.downvoted = !state.downvoted;
-      }
-      else if(state.downvoted){
-        state.tearsofjoy--;
-        state.upvoted = !state.upvoted;
-        state.downvoted = !state.downvoted;
-      }
-      else{
-        state.votes;
-      }
-
-
-      winston.log('debug', state);
+      // if (!state.upvoted  & !state.downvoted ) {
+      //   state.upvoted = !state.upvoted;
+      //   state.downvoted = false;
+      // }
+      // if (state.upvoted) {
+      //   state.tearsofjoy++;
+      //   state.upvoted = !state.upvoted;
+      //   state.downvoted = !state.downvoted;
+      // }
+      // else if(state.downvoted){
+      //   state.tearsofjoy--;
+      //   state.upvoted = !state.upvoted;
+      //   state.downvoted = !state.downvoted;
+      // }
+      // else{
+      //   state.votes;
+      // }
 
 
+      // winston.log('debug', state);
 
-      ctx.editMessageText('<i>choose a button to upvote</i>', Extra
-        .notifications(true)
-        .HTML()
-        .markup(
-          Markup.inlineKeyboard([
-            Markup.callbackButton(`😂${state.tearsofjoy}`, 'tearsofjoy'),
-            Markup.callbackButton(`👍`, 'thumbsup'),
-            Markup.callbackButton(`❤`, 'heart'),
-            Markup.callbackButton(`🔥`, 'fire'),
-            Markup.callbackButton(`👏`, 'clap'),
-            Markup.callbackButton(`😀`, 'grin')
-          ])));
 
-      // vote.reBuildButtons(ctx);
-    })
+
+      // ctx.editMessageText('<i>choose a button to upvote</i>', Extra
+      //   .notifications(true)
+      //   .HTML()
+      //   .markup(
+      //     Markup.inlineKeyboard([
+      //       Markup.callbackButton(`😂${state.tearsofjoy}`, 'tearsofjoy'),
+      //       Markup.callbackButton(`👍`, 'thumbsup'),
+      //       Markup.callbackButton(`❤`, 'heart'),
+      //       Markup.callbackButton(`🔥`, 'fire'),
+      //       Markup.callbackButton(`👏`, 'clap'),
+      //       Markup.callbackButton(`😀`, 'grin')
+      //     ])));
+
+      // castVote.reBuildButtons(ctx);
+    })//     ])));
+
     .then(next);
 })
 bot.action('thumbsup', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 👍')
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() => {
+      vote.castVote(ctx);
     })
     .then(() => {
       vote.reBuildButtons(ctx);
@@ -189,6 +188,9 @@ bot.action('heart', (ctx, next) => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
     .then(() => {
+      vote.castVote(ctx);
+    })
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);;
@@ -197,6 +199,9 @@ bot.action('fire', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 🔥')
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() => {
+      vote.castVote(ctx);
     })
     .then(() => {
       vote.reBuildButtons(ctx);
@@ -209,6 +214,9 @@ bot.action('clap', (ctx, next) => {
       vote.voteMiddleware(ctx, bot.options.username);
     })
     .then(() => {
+      vote.castVote(ctx);
+    })
+    .then(() => {
       vote.reBuildButtons(ctx);
     })
     .then(next);
@@ -217,6 +225,9 @@ bot.action('grin', (ctx, next) => {
   return ctx.answerCallbackQuery('selected 😀')
     .then(() => {
       vote.voteMiddleware(ctx, bot.options.username);
+    })
+    .then(() => {
+      vote.castVote(ctx);
     })
     .then(() => {
       vote.reBuildButtons(ctx);

@@ -192,10 +192,6 @@ class Users {
           }
 
         } else {
-
-          if (id == voterId) {
-            ctx.editMessageText(`cannot vote for yourself`).catch((err) => winston.log('error', err));
-          }
           winston.log('info', `${name} has been upvoted in group ${chatId}`);
         }
       })
@@ -240,6 +236,103 @@ class Users {
 
 
   }
+
+
+  castVote(voterUserId, messageId, data) {
+
+
+    winston.log('info', 'attempting to increment vote', data);
+    winston.log('debug', 'voter user id ', voterUserId);
+    winston.log('debug', 'message id', messageId);
+
+
+    knex('Votes')
+      .where({
+        telegram_id: voterUserId,
+        message_id: messageId
+      })
+      .then(function(rows) {
+
+        if (rows == 0) {
+
+          return knex('Votes')
+            .insert({
+              telegram_id: voterUserId,
+              message_id: messageId,
+              upvoted: true,
+              downvoted: false,
+              vote: data
+            })
+
+        } else {
+
+          return knex('Votes')
+            .where({
+              telegram_id: voterUserId,
+              message_id: messageId
+            })
+            .update({
+              upvoted: true,
+              downvoted: false,
+              vote: data
+            })
+
+        }
+
+
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+      })
+
+  }
+
+  countVotes(ctx, data) {
+
+
+    winston.log('info', 'attempting to count votes');
+
+
+    let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
+    winston.log('debug', 'message id is ', messageId);
+    winston.log('debug', 'data is', data);
+
+
+    knex('Votes')
+      .where({
+        message_id: messageId
+      })
+      .select('vote')
+      .then(function(rows) {
+        winston.log('debug', 'rows info', rows);
+        // count the rows
+        // maybe .countBy
+        // or .map
+        // get a count of the votes with data, and rebuild menu each time
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+      })
+
+    // knex('Votes')
+    //   .where({
+    //     message_id: messageId,
+    //     vote: data
+    //   })
+    //   .count('vote')
+    //   .then(function(rows) {
+    //     let count = rows[0].count;
+    //     winston.log('debug', 'count is', count);
+    //     return count;
+    //   })
+    //   .catch(function(err) {
+    //     winston.log('error', err);
+    //   })
+
+  }
+
+
+
 
 
 }
