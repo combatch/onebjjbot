@@ -7,6 +7,9 @@ let env = process.env.NODE_ENV || 'development';
 let knexfile = path.resolve('knexfile.js');
 let knex = require('knex')(require(knexfile)[env]);
 
+const Telegraf = require('telegraf');
+const { Extra, Markup } = Telegraf;
+
 
 
 /** Class representing Users. */
@@ -178,9 +181,6 @@ class Users {
       })
       .increment('points', 1)
       .asCallback((err, rows) => {
-        winston.log('debug', counter);
-        Increment(counter);
-        winston.log('debug', counter);
 
 
         if (err) return console.error(err);
@@ -238,8 +238,11 @@ class Users {
   }
 
 
-  castVote(voterUserId, messageId, data) {
+  castVote(ctx) {
 
+    let voterUserId = ctx.update.callback_query.from.id;
+    let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
+    let data = ctx.update.callback_query.data;
 
     winston.log('info', 'attempting to increment vote', data);
     winston.log('debug', 'voter user id ', voterUserId);
@@ -276,16 +279,21 @@ class Users {
               downvoted: false,
               vote: data
             })
-
         }
 
+      })
+      .then(()=>{
 
+        winston.log('debug', 'in the second then after cast vote');
+        return this.countVotes(ctx, data);
       })
       .catch(function(err) {
         winston.log('error', err);
       })
 
   }
+
+
 
   countVotes(ctx, data) {
 
@@ -305,29 +313,14 @@ class Users {
       .select('vote')
       .then(function(rows) {
         winston.log('debug', 'rows info', rows);
-        // count the rows
-        // maybe .countBy
-        // or .map
-        // get a count of the votes with data, and rebuild menu each time
+
+        let Countobj = _.countBy(rows, 'vote');
+        rebuildMenuButtons(ctx, Countobj);
+
       })
       .catch(function(err) {
         winston.log('error', err);
       })
-
-    // knex('Votes')
-    //   .where({
-    //     message_id: messageId,
-    //     vote: data
-    //   })
-    //   .count('vote')
-    //   .then(function(rows) {
-    //     let count = rows[0].count;
-    //     winston.log('debug', 'count is', count);
-    //     return count;
-    //   })
-    //   .catch(function(err) {
-    //     winston.log('error', err);
-    //   })
 
   }
 
@@ -337,6 +330,31 @@ class Users {
 
 }
 
+function rebuildMenuButtons(ctx, countObj) {
+
+  winston.log('debug', 'object is ', countObj);
+  console.log(ctx.update);
+
+  let originalMessageId = ctx.update.callback_query.message.reply_to_message.message_id;
+  let latestDate = ctx.update.callback_query.message.edit_date;
+
+  return ctx.editMessageText(`<i>choose a button to upvote</i> (last updated: ${latestDate})`, Extra
+    .inReplyTo(originalMessageId)
+    .notifications(false)
+    .HTML()
+    .markup(
+      Markup.inlineKeyboard([
+        Markup.callbackButton(`${countObj.tearsofjoy || ''} 😂`, 'tearsofjoy'),
+        Markup.callbackButton(`${countObj.thumbsup || ''} 👍`, 'thumbsup'),
+        Markup.callbackButton(`${countObj.heart || ''} ❤`, 'heart'),
+        Markup.callbackButton(`${countObj.fire || ''} 🔥`, 'fire'),
+        Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
+        Markup.callbackButton(`${countObj.grin || ''} 😀`, 'grin')
+      ])));
+
+}
+
+
 function formatObject(dirtyObj) {
   let obj = {};
   obj['name'] = dirtyObj.first_name;
@@ -344,10 +362,6 @@ function formatObject(dirtyObj) {
 
   winston.log('debug', 'in formatObject function');
   return obj;
-}
-
-function Increment(x) {
-  return ++x;
 }
 
 

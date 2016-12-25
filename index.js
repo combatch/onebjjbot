@@ -108,130 +108,91 @@ bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected 😂')
+    // .then(() => {
+    //   vote.voteMiddleware(ctx, bot.options.username);
+    // })
     .then(() => {
-      vote.voteMiddleware(ctx, bot.options.username);
+      user.castVote(ctx);
     })
-    .then(() => {
-      vote.castVote(ctx);
-    })
-    .then(() => {
-      user.countVotes(ctx, data);
+    // .then(() => {
+    //   user.countVotes(ctx, data);
+    // })
 
-      // increment not working
-      // working in this block instead of vote.reBuildButtons until its working
-      //
-      // logic
-      // push data to array
-      // get a count of the data
-      // {tearsofjoy: 2} or  { userId: 123, data: tearsofjoy},{ userId: 5234, data: tearsofjoy},
-      // callback button represents emoji + the count
-      // new buttons rebuilt on each button press (to count for upvote/downvote)
-      // winston.log('debug', state);
-
-      // if (!state.upvoted  & !state.downvoted ) {
-      //   state.upvoted = !state.upvoted;
-      //   state.downvoted = false;
-      // }
-      // if (state.upvoted) {
-      //   state.tearsofjoy++;
-      //   state.upvoted = !state.upvoted;
-      //   state.downvoted = !state.downvoted;
-      // }
-      // else if(state.downvoted){
-      //   state.tearsofjoy--;
-      //   state.upvoted = !state.upvoted;
-      //   state.downvoted = !state.downvoted;
-      // }
-      // else{
-      //   state.votes;
-      // }
-
-
-      // winston.log('debug', state);
-
-
-
-      // ctx.editMessageText('<i>choose a button to upvote</i>', Extra
-      //   .notifications(true)
-      //   .HTML()
-      //   .markup(
-      //     Markup.inlineKeyboard([
-      //       Markup.callbackButton(`😂${state.tearsofjoy}`, 'tearsofjoy'),
-      //       Markup.callbackButton(`👍`, 'thumbsup'),
-      //       Markup.callbackButton(`❤`, 'heart'),
-      //       Markup.callbackButton(`🔥`, 'fire'),
-      //       Markup.callbackButton(`👏`, 'clap'),
-      //       Markup.callbackButton(`😀`, 'grin')
-      //     ])));
-
-      // castVote.reBuildButtons(ctx);
-    })//     ])));
-
-    .then(next);
+  .then(next);
 })
 bot.action('thumbsup', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 👍')
+    // .then(() => {
+    //   vote.voteMiddleware(ctx, bot.options.username);
+    // })
     .then(() => {
-      vote.voteMiddleware(ctx, bot.options.username);
+      user.castVote(ctx);
     })
-    .then(() => {
-      vote.castVote(ctx);
-    })
-    .then(() => {
-      vote.reBuildButtons(ctx);
-    })
+    // .then(() => {
+    //   user.countVotes(ctx, data);
+    // })
     .then(next);
 })
 bot.action('heart', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected ❤')
+    // .then(() => {
+    //   vote.voteMiddleware(ctx, bot.options.username);
+    // })
     .then(() => {
-      vote.voteMiddleware(ctx, bot.options.username);
+      user.castVote(ctx);
     })
-    .then(() => {
-      vote.castVote(ctx);
-    })
-    .then(() => {
-      vote.reBuildButtons(ctx);
-    })
+    // .then(() => {
+    //   user.countVotes(ctx, data);
+    // })
     .then(next);;
 })
 bot.action('fire', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 🔥')
+    // .then(() => {
+    //   vote.voteMiddleware(ctx, bot.options.username);
+    // })
     .then(() => {
-      vote.voteMiddleware(ctx, bot.options.username);
+      user.castVote(ctx);
     })
-    .then(() => {
-      vote.castVote(ctx);
-    })
-    .then(() => {
-      vote.reBuildButtons(ctx);
-    })
+    // .then(() => {
+    //   user.countVotes(ctx, data);
+    // })
     .then(next);
 })
 bot.action('clap', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 👏')
+    // .then(() => {
+    //   vote.voteMiddleware(ctx, bot.options.username);
+    // })
     .then(() => {
-      vote.voteMiddleware(ctx, bot.options.username);
+      user.castVote(ctx);
     })
-    .then(() => {
-      vote.castVote(ctx);
-    })
-    .then(() => {
-      vote.reBuildButtons(ctx);
-    })
+    // .then(() => {
+    //   user.countVotes(ctx, data);
+    // })
     .then(next);
 })
 bot.action('grin', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 😀')
+    // .then(() => {
+    //   vote.voteMiddleware(ctx, bot.options.username);
+    // })
     .then(() => {
-      vote.voteMiddleware(ctx, bot.options.username);
+      user.castVote(ctx);
     })
-    .then(() => {
-      vote.castVote(ctx);
-    })
-    .then(() => {
-      vote.reBuildButtons(ctx);
-    })
+    // .then(() => {
+    //   user.countVotes(ctx, data);
+    // })
     .then(next);
 })
 
