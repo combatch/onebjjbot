@@ -12,7 +12,10 @@ class Vote {
 
   }
 
-  voteMiddleware(ctx) {
+
+
+
+  voteMiddleware(ctx, botName) {
 
     let msgObj = {
       id: ctx.update.callback_query.message.reply_to_message.message_id,
@@ -31,18 +34,18 @@ class Vote {
       if (currentVoters.usersVoted.indexOf(userName) > -1) {
         globalMessageInfo[cIndex].usersVoted.splice(userName, 1);
         state = 'downvote';
-        user.downvoteUser(ctx);
+        user.downvoteUser(ctx, botName, voterId);
       } else {
         globalMessageInfo[cIndex].usersVoted.push(userName);
         state = 'upvote';
-        user.upvoteUser(ctx);
+        user.upvoteUser(ctx, botName, voterId);
 
       }
     } else {
       msgObj.usersVoted.push(userName);
       globalMessageInfo.push(msgObj);
       state = 'upvote';
-      user.upvoteUser(ctx);
+      user.upvoteUser(ctx, botName, voterId);
     }
     console.log(globalMessageInfo);
 

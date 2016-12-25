@@ -7,6 +7,9 @@ let env = process.env.NODE_ENV || 'development';
 let knexfile = path.resolve('knexfile.js');
 let knex = require('knex')(require(knexfile)[env]);
 
+const Telegraf = require('telegraf');
+const { Extra, Markup } = Telegraf;
+
 
 
 /** Class representing Users. */
@@ -161,27 +164,101 @@ class Users {
     }
   }
 
-  upvoteUser(ctx) {
+
+
+  castVote(ctx, botName) {
+
+    let voterUserId = ctx.update.callback_query.from.id;
+    let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
+    let data = ctx.update.callback_query.data;
+
 
     let id = ctx.update.callback_query.message.reply_to_message.from.id;
-    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
     let chatId = ctx.update.callback_query.message.chat.id;
+    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
 
-
-    winston.log('info', 'attempting to Upvote user');
-    knex('Users')
+    knex('Votes')
       .where({
-        telegram_id: id,
-        group_id: chatId
+        telegram_id: voterUserId,
+        message_id: messageId
       })
-      .increment('points', 1)
-      .asCallback((err, rows) => {
-        if (err) return console.error(err);
+      .then(function(rows) {
+
         if (rows == 0) {
-          ctx.reply(`${name} needs to /register`, { disable_notification: true });
+
+          return knex('Votes')
+            .insert({
+              telegram_id: voterUserId,
+              message_id: messageId,
+              canIncrement: true,
+              vote: data
+            })
+
         } else {
-          winston.log('info', `${name} has been upvoted in group ${chatId}`);
+
+          return knex('Votes')
+            .where({
+              telegram_id: voterUserId,
+              message_id: messageId
+            })
+            .update({
+              canIncrement: false,
+              vote: data
+            })
         }
+
+      })
+      .then(() => {
+        return this.countVotes(ctx, data);
+      })
+      .then(() => {
+
+        return knex('Votes')
+          .where({
+            telegram_id: voterUserId,
+            message_id: messageId,
+            canIncrement: true
+          })
+          .then((rows) => {
+
+            let Countobj = _.countBy(rows);
+            if (_.isEmpty(Countobj)) {
+              winston.log('info', `${voterUserId} changed their vote to ${data}`);
+            }
+            else{
+              // calculate score increment here ?
+              knex('Users')
+                .where({
+                  telegram_id: id,
+                  group_id: chatId
+                })
+                .increment('points', 1)
+                .asCallback((err, rows) => {
+
+                  if (err) return console.error(err);
+                  if (rows == 0) {
+                    if (name.toLowerCase() == botName.toLowerCase()) {
+                      ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+                    } else {
+                      ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+                    }
+
+                  } else {
+                    winston.log('info', `${name} has been upvoted in group ${chatId}`);
+                  }
+                })
+                .catch(function(err) {
+                  winston.log('error', err);
+                })
+
+            }
+
+
+
+
+          })
+
+
       })
       .catch(function(err) {
         winston.log('error', err);
@@ -190,34 +267,63 @@ class Users {
   }
 
 
-  downvoteUser(ctx) {
 
-    let id = ctx.update.callback_query.message.reply_to_message.from.id;
-    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
-    let chatId = ctx.update.callback_query.message.chat.id;
+  countVotes(ctx, data) {
 
-    winston.log('info', 'attempting to Downvote user');
-    knex('Users')
+
+    winston.log('info', 'attempting to count votes');
+
+
+    let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
+    winston.log('debug', 'message id is ', messageId);
+    winston.log('debug', 'data is', data);
+
+
+    knex('Votes')
       .where({
-        telegram_id: id,
-        group_id: chatId
+        message_id: messageId
       })
-      .decrement('points', 1)
-      .asCallback((err, rows) => {
-        if (err) return console.error(err);
-        if (rows == 0) {
-          ctx.reply(`${name} needs to /register`, { disable_notification: true });
-        } else {
-          winston.log('info', `${name} has been downvoted in group ${chatId}`);
-        }
+      .select('vote')
+      .then(function(rows) {
+        winston.log('debug', 'rows info', rows);
+
+        let Countobj = _.countBy(rows, 'vote');
+        rebuildMenuButtons(ctx, Countobj);
+
       })
       .catch(function(err) {
         winston.log('error', err);
       })
 
   }
+
+
+
+
 
 }
+
+function rebuildMenuButtons(ctx, countObj) {
+
+  let originalMessageId = ctx.update.callback_query.message.reply_to_message.message_id;
+  let latestDate = ctx.update.callback_query.message.edit_date || '';
+
+  return ctx.editMessageText(`<i>choose a button to upvote</i> (last updated: ${latestDate})`, Extra
+    .inReplyTo(originalMessageId)
+    .notifications(false)
+    .HTML()
+    .markup(
+      Markup.inlineKeyboard([
+        Markup.callbackButton(`${countObj.tearsofjoy || ''} 😂`, 'tearsofjoy'),
+        Markup.callbackButton(`${countObj.thumbsup || ''} 👍`, 'thumbsup'),
+        Markup.callbackButton(`${countObj.heart || ''} ❤`, 'heart'),
+        Markup.callbackButton(`${countObj.fire || ''} 🔥`, 'fire'),
+        Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
+        Markup.callbackButton(`${countObj.grin || ''} 😀`, 'grin')
+      ])));
+
+}
+
 
 function formatObject(dirtyObj) {
   let obj = {};
@@ -227,5 +333,6 @@ function formatObject(dirtyObj) {
   winston.log('debug', 'in formatObject function');
   return obj;
 }
+
 
 export default Users;

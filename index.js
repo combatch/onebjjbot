@@ -26,7 +26,7 @@ migrations.migrateLatest();
 bot.use(Telegraf.memorySession());
 
 bot.telegram.getMe().then((botInfo) => {
-  bot.options.username = botInfo.username
+  bot.options.username = botInfo.username;
 })
 
 
@@ -54,25 +54,33 @@ bot.command('register', (ctx) => {
 });
 
 
-
 bot.command('leaderboard', (ctx) => {
   user.getLeaderboard(ctx);
 });
 
 
-
+// if replying with emoji, auto increment
 bot.on('message', (ctx) => {
 
   let lol = "l+o+l.*";
   let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
   let upvoteRegEx = new RegExp(upvote, "ig");
+  let lmao = "l+m+a+o+";
+  let lmaoRegEx = new RegExp(lmao, "ig");
 
   if (ctx.message.reply_to_message) {
-    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || ctx.message.text == 'haha') {
+
+    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha') {
+
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
       let originalMessageId = ctx.message.reply_to_message.message_id;
+
+      if (userId == replyTo) {
+        return ctx.reply('cant vote for yourself');
+      }
+
 
       return ctx.reply('<i>choose a button to upvote</i>', Extra
         .inReplyTo(originalMessageId)
@@ -82,7 +90,7 @@ bot.on('message', (ctx) => {
           Markup.inlineKeyboard([
             Markup.callbackButton('😂', 'tearsofjoy'),
             Markup.callbackButton('👍', 'thumbsup'),
-            Markup.callbackButton('❤️', 'heart'),
+            Markup.callbackButton('❤', 'heart'),
             Markup.callbackButton('🔥', 'fire'),
             Markup.callbackButton('👏', 'clap'),
             Markup.callbackButton('😀', 'grin')
@@ -93,46 +101,58 @@ bot.on('message', (ctx) => {
 });
 
 
-
 bot.action('tearsofjoy', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    .then(next);
+
+  .then(next);
 })
 bot.action('thumbsup', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 👍')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      user.castVote(ctx, bot.options.username);
     })
     .then(next);
 })
 bot.action('heart', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected ❤')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      user.castVote(ctx, bot.options.username);
     })
     .then(next);;
 })
 bot.action('fire', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 🔥')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      user.castVote(ctx, bot.options.username);
     })
     .then(next);
 })
 bot.action('clap', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 👏')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      user.castVote(ctx, bot.options.username);
     })
     .then(next);
 })
 bot.action('grin', (ctx, next) => {
+  let data = ctx.update.callback_query.data;
+
   return ctx.answerCallbackQuery('selected 😀')
     .then(() => {
-      vote.voteMiddleware(ctx);
+      user.castVote(ctx, bot.options.username);
     })
     .then(next);
 })
