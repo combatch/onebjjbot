@@ -164,90 +164,18 @@ class Users {
     }
   }
 
-  upvoteUser(ctx, botName, voterId) {
-
-    let id = ctx.update.callback_query.message.reply_to_message.from.id;
-    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
-    let chatId = ctx.update.callback_query.message.chat.id;
-
-    let counter = counter || 0;
 
 
-    winston.log('info', 'attempting to Upvote user');
-    knex('Users')
-      .where({
-        telegram_id: id,
-        group_id: chatId
-      })
-      .increment('points', 1)
-      .asCallback((err, rows) => {
-
-
-        if (err) return console.error(err);
-        if (rows == 0) {
-          if (name.toLowerCase() == botName.toLowerCase()) {
-            ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
-          } else {
-            ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
-          }
-
-        } else {
-          winston.log('info', `${name} has been upvoted in group ${chatId}`);
-        }
-      })
-      .catch(function(err) {
-        winston.log('error', err);
-      })
-
-
-  }
-
-
-  downvoteUser(ctx, botName, voterId) {
-
-    let id = ctx.update.callback_query.message.reply_to_message.from.id;
-    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
-    let chatId = ctx.update.callback_query.message.chat.id;
-
-
-    winston.log('info', 'attempting to Downvote user');
-    knex('Users')
-      .where({
-        telegram_id: id,
-        group_id: chatId
-      })
-      .decrement('points', 1)
-      .asCallback((err, rows) => {
-        if (err) return console.error(err);
-        if (rows == 0) {
-          if (name.toLowerCase() == botName.toLowerCase()) {
-            ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
-          } else {
-            ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
-          }
-
-        } else {
-          winston.log('info', `${name} has been downvoted in group ${chatId}`);
-        }
-      })
-      .catch(function(err) {
-        winston.log('error', err);
-      })
-
-
-  }
-
-
-  castVote(ctx) {
+  castVote(ctx, botName) {
 
     let voterUserId = ctx.update.callback_query.from.id;
     let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
     let data = ctx.update.callback_query.data;
 
-    winston.log('info', 'attempting to increment vote', data);
-    winston.log('debug', 'voter user id ', voterUserId);
-    winston.log('debug', 'message id', messageId);
 
+    let id = ctx.update.callback_query.message.reply_to_message.from.id;
+    let chatId = ctx.update.callback_query.message.chat.id;
+    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
 
     knex('Votes')
       .where({
@@ -262,8 +190,7 @@ class Users {
             .insert({
               telegram_id: voterUserId,
               message_id: messageId,
-              upvoted: true,
-              downvoted: false,
+              canIncrement: true,
               vote: data
             })
 
@@ -275,17 +202,63 @@ class Users {
               message_id: messageId
             })
             .update({
-              upvoted: true,
-              downvoted: false,
+              canIncrement: false,
               vote: data
             })
         }
 
       })
-      .then(()=>{
-
-        winston.log('debug', 'in the second then after cast vote');
+      .then(() => {
         return this.countVotes(ctx, data);
+      })
+      .then(() => {
+
+        return knex('Votes')
+          .where({
+            telegram_id: voterUserId,
+            message_id: messageId,
+            canIncrement: true
+          })
+          .then((rows) => {
+
+            let Countobj = _.countBy(rows);
+            if (_.isEmpty(Countobj)) {
+              winston.log('info', `${voterUserId} changed their vote to ${data}`);
+            }
+            else{
+              // calculate score increment here ?
+              knex('Users')
+                .where({
+                  telegram_id: id,
+                  group_id: chatId
+                })
+                .increment('points', 1)
+                .asCallback((err, rows) => {
+
+                  if (err) return console.error(err);
+                  if (rows == 0) {
+                    if (name.toLowerCase() == botName.toLowerCase()) {
+                      ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+                    } else {
+                      ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+                    }
+
+                  } else {
+                    winston.log('info', `${name} has been upvoted in group ${chatId}`);
+                  }
+                })
+                .catch(function(err) {
+                  winston.log('error', err);
+                })
+
+            }
+
+
+
+
+          })
+
+
       })
       .catch(function(err) {
         winston.log('error', err);
@@ -332,11 +305,8 @@ class Users {
 
 function rebuildMenuButtons(ctx, countObj) {
 
-  winston.log('debug', 'object is ', countObj);
-  console.log(ctx.update);
-
   let originalMessageId = ctx.update.callback_query.message.reply_to_message.message_id;
-  let latestDate = ctx.update.callback_query.message.edit_date;
+  let latestDate = ctx.update.callback_query.message.edit_date || '';
 
   return ctx.editMessageText(`<i>choose a button to upvote</i> (last updated: ${latestDate})`, Extra
     .inReplyTo(originalMessageId)

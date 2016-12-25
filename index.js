@@ -59,7 +59,7 @@ bot.command('leaderboard', (ctx) => {
 });
 
 
-
+// if replying with emoji, auto increment
 bot.on('message', (ctx) => {
 
   let lol = "l+o+l.*";
@@ -68,7 +68,6 @@ bot.on('message', (ctx) => {
   let upvoteRegEx = new RegExp(upvote, "ig");
   let lmao = "l+m+a+o+";
   let lmaoRegEx = new RegExp(lmao, "ig");
-
 
   if (ctx.message.reply_to_message) {
 
@@ -97,8 +96,6 @@ bot.on('message', (ctx) => {
             Markup.callbackButton('😀', 'grin')
           ])))
 
-
-
     }
   }
 });
@@ -108,15 +105,9 @@ bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected 😂')
-    // .then(() => {
-    //   vote.voteMiddleware(ctx, bot.options.username);
-    // })
     .then(() => {
-      user.castVote(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    // .then(() => {
-    //   user.countVotes(ctx, data);
-    // })
 
   .then(next);
 })
@@ -124,75 +115,45 @@ bot.action('thumbsup', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected 👍')
-    // .then(() => {
-    //   vote.voteMiddleware(ctx, bot.options.username);
-    // })
     .then(() => {
-      user.castVote(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    // .then(() => {
-    //   user.countVotes(ctx, data);
-    // })
     .then(next);
 })
 bot.action('heart', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected ❤')
-    // .then(() => {
-    //   vote.voteMiddleware(ctx, bot.options.username);
-    // })
     .then(() => {
-      user.castVote(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    // .then(() => {
-    //   user.countVotes(ctx, data);
-    // })
     .then(next);;
 })
 bot.action('fire', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected 🔥')
-    // .then(() => {
-    //   vote.voteMiddleware(ctx, bot.options.username);
-    // })
     .then(() => {
-      user.castVote(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    // .then(() => {
-    //   user.countVotes(ctx, data);
-    // })
     .then(next);
 })
 bot.action('clap', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected 👏')
-    // .then(() => {
-    //   vote.voteMiddleware(ctx, bot.options.username);
-    // })
     .then(() => {
-      user.castVote(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    // .then(() => {
-    //   user.countVotes(ctx, data);
-    // })
     .then(next);
 })
 bot.action('grin', (ctx, next) => {
   let data = ctx.update.callback_query.data;
 
   return ctx.answerCallbackQuery('selected 😀')
-    // .then(() => {
-    //   vote.voteMiddleware(ctx, bot.options.username);
-    // })
     .then(() => {
-      user.castVote(ctx);
+      user.castVote(ctx, bot.options.username);
     })
-    // .then(() => {
-    //   user.countVotes(ctx, data);
-    // })
     .then(next);
 })
 

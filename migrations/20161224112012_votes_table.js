@@ -8,8 +8,7 @@ exports.up = function(knex, Promise) {
       table.integer('message_id');
       table.integer('group_id');
       table.string('vote');
-      table.boolean('upvoted');
-      table.boolean('downvoted');
+      table.boolean('canIncrement');
       table.timestamp('created_at').defaultTo(knex.fn.now());
       table.timestamp('modified_at').defaultTo(knex.fn.now());
     })
