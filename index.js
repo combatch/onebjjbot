@@ -6,6 +6,7 @@ import Knex from './imports/knex';
 import ScreenShots from './imports/screenshots';
 import Users from './imports/users';
 import Vote from './imports/vote';
+import Googleapis from './imports/google';
 import Files from './imports/fileStreams';
 
 let env = process.env.NODE_ENV || 'development';
@@ -18,6 +19,7 @@ const stocksMiddleware = new Stocks();
 const migrations = new Knex();
 const user = new Users();
 const vote = new Vote();
+const google = new Googleapis();
 
 migrations.migrateLatest();
 
@@ -53,6 +55,17 @@ bot.command('register', (ctx) => {
 
 });
 
+
+bot.hears(/translate (.+)/ig, (ctx) => {
+
+  if (ctx.message.reply_to_message) {
+    google.translate(ctx);
+  }
+  else{
+    return ctx.reply('usage: reply to a message with "translate <foreignlanguage>"');
+  }
+
+});
 
 bot.command('leaderboard', (ctx) => {
   user.getLeaderboard(ctx);
