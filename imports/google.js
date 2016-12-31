@@ -61,7 +61,73 @@ class Google {
 
   }
 
+  gif(ctx, next) {
+    let query = ctx.match[1];
+    winston.log('debug', 'ctx data is', ctx);
 
+    // let replyTo = ctx;
+    winston.log('debug', 'in gif command', query);
+
+
+
+    request(`https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis.CX}&imgSize=medium&imgType=photo&num=15&fileType=gif&safe=off&searchType=image&start=1&key=${conf.apis.IMAGE}`, function(error, response, body) {
+      if (error) { winston.log('debug', error) };
+      let data = JSON.parse(body);
+
+      if (data.searchInformation.totalResults == 0) {
+        return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+      }
+
+
+      winston.log('debug', 'data is', data);
+
+    });
+
+
+  }
+
+  tenorSearch(ctx, next) {
+
+
+    let query = ctx.match[1];
+
+
+    var options = {
+      method: 'GET',
+      url: 'https://api.tenor.co/v1/search',
+      qs: { tag: query, key: 'LIVDSRZULELA' },
+      headers: {
+        'cache-control': 'no-cache'
+      }
+    };
+
+    request(options, function(error, response, body) {
+      if (error) { winston.log('debug', error) };
+      let data = JSON.parse(body);
+
+
+
+      winston.log('debug', 'data is', data);
+    });
+
+
+  }
+
+
+}
+
+function filterImageResults(data) {
+
+  let obj = {};
+  if (data.link) {}
+  obj['name'] = dirtyObj.first_name;
+  obj['points'] = dirtyObj.points;
+
+  winston.log('debug', 'in formatObject function');
+  return obj;
+  //"mime": "image/gif",
+  //"image": {
+  //      "byteSize": 2056276,
 }
 
 function languageToCode(text) {
