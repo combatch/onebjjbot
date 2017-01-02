@@ -70,20 +70,20 @@ class Users {
                   })
               })
               .then(function() {
-                ctx.replyWithHTML(`<b>${User.first_name}</b> has been registered.`, { reply_to_message_id: ctx.message.message_id })
+                return ctx.replyWithHTML(`<b>${User.first_name}</b> has been registered.`, { reply_to_message_id: ctx.message.message_id })
               })
               .catch(function(err) {
                 winston.log('error', 'in the catch', err);
                 ctx.reply(`${err} `);
               });
           } else {
-            ctx.replyWithHTML(`<b>${User.first_name}</b> is already registered.`, { reply_to_message_id: ctx.message.message_id })
+            return ctx.replyWithHTML(`<b>${User.first_name}</b> is already registered.`, { reply_to_message_id: ctx.message.message_id })
           }
 
         });
 
     } else {
-      ctx.replyWithHTML(`command not available in private chat.`, { reply_to_message_id: ctx.message.message_id })
+      return ctx.replyWithHTML(`command not available in private chat.`, { reply_to_message_id: ctx.message.message_id })
     }
 
 

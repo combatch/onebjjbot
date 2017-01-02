@@ -1,7 +1,10 @@
 import path from 'path';
 import winston from 'winston';
 import conf from '../config/config.js';
+import _ from 'lodash';
 import request from 'request';
+
+
 
 //let env = process.env.NODE_ENV || 'development';
 
@@ -21,7 +24,7 @@ class Google {
    * runs Google
    * @param {object} ctx - telegraf context object.
    */
-  translate(ctx, next) {
+  translate(ctx) {
 
     let language = ctx.match[1];
     let text = ctx.update.message.reply_to_message.text;
@@ -43,14 +46,14 @@ class Google {
     };
 
     request(options, function(error, response, body) {
-      if (error) { winston.log('debug', error) };
+      if (error) { console.log('debug', error) };
       let data = JSON.parse(body);
 
       if (data.error) {
-        winston.log('error', data.error);
+        console.log('error', data.error);
         return ctx.reply(`${data.error.message} for foreign language`);
       } else {
-        winston.log('info', data);
+        console.log('info', data);
         let translated = data.data.translations[0].translatedText;
 
         return ctx.reply(`${translated}`, { reply_to_message_id: replyTo });
@@ -61,32 +64,52 @@ class Google {
 
   }
 
-  gif(ctx, next) {
-    let query = ctx.match[1];
-    winston.log('debug', 'ctx data is', ctx);
+  getGifs(ctx, next) {
 
-    // let replyTo = ctx;
-    winston.log('debug', 'in gif command', query);
+    console.log('inside get gifs');
 
 
+    return next().then(() => {
 
-    request(`https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis.CX}&imgSize=medium&imgType=photo&num=15&fileType=gif&safe=off&searchType=image&start=1&key=${conf.apis.IMAGE}`, function(error, response, body) {
-      if (error) { winston.log('debug', error) };
-      let data = JSON.parse(body);
+      let query = ctx.match[1];
+      let replyTo = ctx.update.message.message_id;
 
-      if (data.searchInformation.totalResults == 0) {
-        return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
-      }
+      request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&fileType=gif&imgType=photo&num=10&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
+        if (error) {
+          console.log('debug', error)
+          return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
+        }
 
 
-      winston.log('debug', 'data is', data);
+        let data = JSON.parse(body);
+
+        if (data.searchInformation.totalResults == 0) {
+          return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+        } else {
+
+          let filtered = filterImageResults(data);
+          console.log(filtered);
+          console.log(filtered.length);
+
+          if (filtered.length) {
+            let random = _.sample(filtered);
+            console.log(random);
+
+            ctx.replyWithChatAction('upload_video');
+            return ctx.replyWithVideo({ url: random['url'] });
+          } else {
+            return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
+          }
+
+        }
+
+      });
 
     });
 
-
   }
 
-  tenorSearch(ctx, next) {
+  tenorSearch(ctx) {
 
 
     let query = ctx.match[1];
@@ -102,12 +125,12 @@ class Google {
     };
 
     request(options, function(error, response, body) {
-      if (error) { winston.log('debug', error) };
+      if (error) { console.log('debug', error) };
       let data = JSON.parse(body);
 
 
 
-      winston.log('debug', 'data is', data);
+      console.log('debug', 'data is', data);
     });
 
 
@@ -118,16 +141,21 @@ class Google {
 
 function filterImageResults(data) {
 
-  let obj = {};
-  if (data.link) {}
-  obj['name'] = dirtyObj.first_name;
-  obj['points'] = dirtyObj.points;
+  let filtered = data.items.map(function(gif) {
+    let obj = {};
+    // console.log(gif.image.byteSize);
+    // console.log(gif.link);
 
-  winston.log('debug', 'in formatObject function');
-  return obj;
-  //"mime": "image/gif",
-  //"image": {
-  //      "byteSize": 2056276,
+    if (gif.image.byteSize < '2097152' && gif.image.byteSize > '524288') {
+      //if (gif.image.byteSize <= '2097152' && gif.link.startsWith("https")) {
+      obj['url'] = gif.link;
+      return obj;
+    }
+  });
+
+  filtered = _.remove(filtered, undefined);
+  return filtered;
+
 }
 
 function languageToCode(text) {
