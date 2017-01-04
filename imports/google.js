@@ -146,7 +146,7 @@ function filterImageResults(data) {
     // console.log(gif.image.byteSize);
     // console.log(gif.link);
 
-    if (gif.image.byteSize < '2097152' && gif.image.byteSize > '524288') {
+    if (gif.image.byteSize < '3097152' && gif.image.byteSize > '524288') {
       //if (gif.image.byteSize <= '2097152' && gif.link.startsWith("https")) {
       obj['url'] = gif.link;
       return obj;
