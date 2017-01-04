@@ -118,7 +118,10 @@ class Google {
     var options = {
       method: 'GET',
       url: 'https://api.tenor.co/v1/search',
-      qs: { tag: query, key: 'LIVDSRZULELA' },
+      qs: {
+        tag: query,
+        key: '41S2CSB7PHJ7',
+        safesearch: 'off' },
       headers: {
         'cache-control': 'no-cache'
       }
@@ -128,9 +131,26 @@ class Google {
       if (error) { console.log('debug', error) };
       let data = JSON.parse(body);
 
+      if (!data.results.length) {
+          return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+      }
+      else{
+
+          let filtered = filterTenorResults(data);
+
+          if (filtered.length) {
+            let random = _.sample(filtered);
+            console.log(random);
+
+            ctx.replyWithChatAction('upload_video');
+            return ctx.replyWithVideo({ url: random['url'] });
+          } else {
+            return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
+          }
+
+      }
 
 
-      console.log('debug', 'data is', data);
     });
 
 
@@ -157,6 +177,22 @@ function filterImageResults(data) {
   return filtered;
 
 }
+
+
+function filterTenorResults(data) {
+
+  let filtered = data.results.map(function(gif) {
+    let obj = {};
+      obj['url'] = gif.media[0]['mp4']['url'];
+      return obj;
+  });
+
+  filtered = _.remove(filtered, undefined);
+  return filtered;
+
+}
+
+
 
 function languageToCode(text) {
   let string = text.toLowerCase();

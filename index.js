@@ -72,14 +72,13 @@ bot.command('leaderboard', (ctx) => {
   user.getLeaderboard(ctx);
 });
 
-bot.hears(/gif (.+)/ig, google.getGifs, (ctx) => {
-
-  return console.log('something happened');
-});
-
-// bot.hears(/gif (.+)/ig, (ctx) => {
-//   return google.getGifs(ctx);
+// bot.hears(/gif (.+)/ig, google.getGifs, (ctx) => {
+//   return console.log('something happened');
 // });
+
+bot.hears(/reaction (.+)/ig, (ctx) => {
+  return google.tenorSearch(ctx);
+});
 
 
 
