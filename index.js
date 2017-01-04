@@ -6,7 +6,7 @@ import Knex from './imports/knex';
 import ScreenShots from './imports/screenshots';
 import Users from './imports/users';
 import Vote from './imports/vote';
-import Googleapis from './imports/google';
+import Google from './imports/google';
 import Files from './imports/fileStreams';
 
 let env = process.env.NODE_ENV || 'development';
@@ -19,9 +19,10 @@ const stocksMiddleware = new Stocks();
 const migrations = new Knex();
 const user = new Users();
 const vote = new Vote();
-const google = new Googleapis();
+const google = new Google();
 
-migrations.migrateLatest();
+
+//migrations.migrateLatest();
 
 
 // middlewares
@@ -50,18 +51,18 @@ bot.hears(/\/ss (.+)/, (ctx) => {
 
 bot.command('register', (ctx) => {
 
+
   winston.log('debug', 'in register command');
   user.registerUser(ctx);
 
 });
 
 
-bot.hears(/translate (.+)/ig, (ctx) => {
+bot.hears(/translate (.+)/i, (ctx) => {
 
   if (ctx.message.reply_to_message) {
     google.translate(ctx);
-  }
-  else{
+  } else {
     return ctx.reply('usage: reply to a message with "translate <foreignlanguage>"');
   }
 
@@ -71,9 +72,22 @@ bot.command('leaderboard', (ctx) => {
   user.getLeaderboard(ctx);
 });
 
+bot.hears(/gif (.+)/ig, google.getGifs, (ctx) => {
+
+  return console.log('something happened');
+});
+
+// bot.hears(/gif (.+)/ig, (ctx) => {
+//   return google.getGifs(ctx);
+// });
+
+
+
+
 
 // if replying with emoji, auto increment
 bot.on('message', (ctx) => {
+
 
   let lol = "l+o+l.*";
   let lolRegEx = new RegExp(lol, "ig");
