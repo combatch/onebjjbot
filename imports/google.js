@@ -68,7 +68,7 @@ class Google {
 
   getGifs(ctx) {
 
-    let query = ctx.match[1];
+    let query = ctx.match[1].replace(/[?=]/g, " ");
     let replyTo = ctx.update.message.message_id;
 
     request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&fileType=gif&imgType=photo&num=10&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
@@ -112,7 +112,7 @@ class Google {
 
   tenorSearch(ctx) {
 
-    let query = ctx.match[1];
+    let query = ctx.match[1].replace(/[?=]/g, " ");
     let replyTo = ctx.update.message.message_id;
 
     var options = {
