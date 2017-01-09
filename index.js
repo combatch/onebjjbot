@@ -76,7 +76,30 @@ bot.command('register', (ctx) => {
 
 
 bot.command('leaderboard', (ctx) => {
-  user.getLeaderboard(ctx);
+
+
+  var p = new Promise(function(resolve, reject) {
+     resolve(user.getLeaderboard(ctx));
+  });
+  p.then((data) =>{
+    console.log(data);
+  });
+
+
+
+
+
+
+
+
+
+  // var result = user.getLeaderboard(ctx);
+
+  // result.then((rows) => {
+  //   console.log(result);
+  //   console.log(rows);
+  // });
+
 });
 
 // async function async(ctx) {

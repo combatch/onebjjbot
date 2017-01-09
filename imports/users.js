@@ -138,7 +138,7 @@ class Users {
 
     if (ctx.message.chat.type != 'private') {
 
-      knex('Users')
+     return knex('Users')
         .where({
           group_id: group
         })
@@ -159,11 +159,12 @@ class Users {
           })
           text = text.join('\n');
 
+            return text;
 
-          returnStickiedPost(ctx, text);
-
-
-
+        })
+        .then((text) =>{
+          console.log(text);
+          return returnStickiedPost(ctx,text);
         })
         .catch(function(err) {
           winston.log('error', err);
@@ -349,6 +350,7 @@ function returnStickiedPost(ctx, text) {
   let title = ctx.chat.title;
   var stickiedPostId;
 
+  return
   knex('Votes')
     .where({
       group_id: group,
@@ -383,6 +385,12 @@ function returnStickiedPost(ctx, text) {
       } else {
         let messageId = rows['message_id'];
         console.log(' post is stickied, do stuff');
+
+
+        return Promise.resolve(messageId);
+
+        return messageId;
+
 
         // ctx.editMessageText((`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true }).catch((err) => winston.log('error', err));
 
