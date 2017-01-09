@@ -46,12 +46,13 @@
     "postgraphql": "^2.4.0",
     "pretty-error": "^2.0.2",
     "request": "^2.79.0",
-    "telegraf": "^3.6.1",
+    "telegraf": "^3.6.4",
     "url": "^0.11.0",
     "winston": "^2.3.0",
     "winston-papertrail": "^1.0.4"
   },
   "devDependencies": {
+    "babel-plugin-transform-async-to-generator": "^6.16.0",
     "jsdoc": "^3.4.3"
   }
 }
