@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import _ from 'lodash';
 import winston from 'winston';
+import config from '../config/config';
 
 let env = process.env.NODE_ENV || 'development';
 let knexfile = path.resolve('knexfile.js');
@@ -9,6 +10,8 @@ let knex = require('knex')(require(knexfile)[env]);
 
 const Telegraf = require('telegraf');
 const { Extra, Markup } = Telegraf;
+const bot = new Telegraf(config[`${env}`]['token']);
+
 
 
 
@@ -21,6 +24,8 @@ class Users {
   constructor() {
 
   }
+
+
 
 
   /**
@@ -128,7 +133,6 @@ class Users {
     // send as image.
 
 
-
     let group = ctx.chat.id;
     let title = ctx.chat.title;
 
@@ -144,7 +148,6 @@ class Users {
         .then((data) => {
 
           let cleanObj = _.map(data, formatObject);
-          winston.log('debug', 'data is', cleanObj);
 
           let text = cleanObj.map((data, index) => {
             let string = '';
@@ -156,14 +159,17 @@ class Users {
           })
           text = text.join('\n');
 
-          ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true });
+
+          returnStickiedPost(ctx, text);
+
+
+
         })
         .catch(function(err) {
           winston.log('error', err);
         })
     }
   }
-
 
 
   castVote(ctx, botName) {
@@ -224,8 +230,7 @@ class Users {
             let Countobj = _.countBy(rows);
             if (_.isEmpty(Countobj)) {
               winston.log('info', `${voterUserId} changed their vote to ${data}`);
-            }
-            else{
+            } else {
               // calculate score increment here ?
               knex('Users')
                 .where({
@@ -265,6 +270,7 @@ class Users {
       })
 
   }
+
 
 
 
@@ -325,13 +331,72 @@ function rebuildMenuButtons(ctx, countObj) {
 }
 
 
+
+
+
 function formatObject(dirtyObj) {
   let obj = {};
   obj['name'] = dirtyObj.first_name;
   obj['points'] = dirtyObj.points;
 
-  winston.log('debug', 'in formatObject function');
   return obj;
+}
+
+function returnStickiedPost(ctx, text) {
+
+
+  let group = ctx.chat.id;
+  let title = ctx.chat.title;
+  var stickiedPostId;
+
+  knex('Votes')
+    .where({
+      group_id: group,
+      isStickied: true
+    })
+    .first('message_id')
+    .then(function(rows) {
+
+      if (rows == 0) {
+
+        console.log('nothing found in stickied so stickiying a post');
+
+
+        ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true }).
+        then((data) => {
+          console.log('here is new data');
+
+          console.log(data);
+          stickiedPostId = data.message_id;
+
+          return knex('Votes')
+            .insert({
+              group_id: group,
+              message_id: stickiedPostId,
+              isStickied: true
+            })
+
+
+        });
+
+
+      } else {
+        let messageId = rows['message_id'];
+        console.log(' post is stickied, do stuff');
+
+        // ctx.editMessageText((`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true }).catch((err) => winston.log('error', err));
+
+
+      }
+
+
+
+    });
+
+
+
+
+
 }
 
 

@@ -22,7 +22,7 @@ const vote = new Vote();
 const google = new Google();
 
 
-//migrations.migrateLatest();
+migrations.migrateLatest();
 
 
 // middlewares
@@ -36,25 +36,12 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
-bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
-  winston.log('debug', 'symbol: ' + ctx.match[1]);
+bot.hears(/\gif (.+)/i, (ctx) => {
+  return google.getGifs(ctx);
 });
 
-bot.hears(/\/ss (.+)/, (ctx) => {
-
-  winston.log('debug', 'in the ss function'); // left debug messages for now
-  const ss = new ScreenShots(); // the class
-  ss.createScreenshot(ctx); // the method
-
-})
-
-
-bot.command('register', (ctx) => {
-
-
-  winston.log('debug', 'in register command');
-  user.registerUser(ctx);
-
+bot.hears(/mfw (.+)/i, (ctx) => {
+  return google.tenorSearch(ctx);
 });
 
 
@@ -68,17 +55,36 @@ bot.hears(/translate (.+)/i, (ctx) => {
 
 });
 
+bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
+  winston.log('debug', 'symbol: ' + ctx.match[1]);
+});
+
+bot.hears(/\/ss (.+)/, (ctx) => {
+
+  const ss = new ScreenShots(); // the class
+  ss.createScreenshot(ctx); // the method
+
+});
+
+
+
+bot.command('register', (ctx) => {
+  winston.log('debug', 'in register command');
+  user.registerUser(ctx);
+});
+
+
+
 bot.command('leaderboard', (ctx) => {
   user.getLeaderboard(ctx);
 });
 
-// bot.hears(/gif (.+)/ig, google.getGifs, (ctx) => {
-//   return console.log('something happened');
-// });
-
-bot.hears(/reaction (.+)/ig, (ctx) => {
-  return google.tenorSearch(ctx);
-});
+// async function async(ctx) {
+//   var value = await Promise
+//     .resolve('test')
+//     .then(x => 'asdf');
+//   return value;
+// }
 
 
 
@@ -106,7 +112,6 @@ bot.on('message', (ctx) => {
       if (userId == replyTo) {
         return ctx.reply('cant vote for yourself');
       }
-
 
       return ctx.reply('<i>choose a button to upvote</i>', Extra
         .inReplyTo(originalMessageId)

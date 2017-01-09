@@ -3,7 +3,9 @@ import winston from 'winston';
 import conf from '../config/config.js';
 import _ from 'lodash';
 import request from 'request';
+import fs from 'fs';
 
+let tmp = path.resolve('tmp');
 
 
 //let env = process.env.NODE_ENV || 'development';
@@ -64,56 +66,54 @@ class Google {
 
   }
 
-  getGifs(ctx, next) {
+  getGifs(ctx) {
 
-    console.log('inside get gifs');
+    let query = ctx.match[1];
+    let replyTo = ctx.update.message.message_id;
 
+    request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&fileType=gif&imgType=photo&num=10&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
+      if (error) {
+        console.log('debug', error)
+        return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
+      }
 
-    return next().then(() => {
+      let data = JSON.parse(body);
 
-      let query = ctx.match[1];
-      let replyTo = ctx.update.message.message_id;
+      if (data.searchInformation.totalResults == 0) {
+        return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+      } else {
 
-      request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&fileType=gif&imgType=photo&num=10&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
-        if (error) {
-          console.log('debug', error)
-          return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
-        }
+        let filtered = filterImageResults(data);
+        if (filtered.length) {
+          let random = _.sample(filtered);
+          winston.log('info', random);
 
+          ctx.replyWithChatAction('upload_video');
+          //return ctx.replyWithVideo({ url: random['url'] });
 
-        let data = JSON.parse(body);
+          // saving / uploading from server b/c it should be faster
+          request(random)
+            .pipe(fs.createWriteStream(`${tmp}/${query}.gif`))
+            .on("finish", function(data, err) {
+              var gif = fs.createReadStream(`${tmp}/${query}.gif`);
+              return ctx.replyWithVideo({ source: gif }, { disable_notification: true });
+            })
 
-        if (data.searchInformation.totalResults == 0) {
-          return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
         } else {
-
-          let filtered = filterImageResults(data);
-          console.log(filtered);
-          console.log(filtered.length);
-
-          if (filtered.length) {
-            let random = _.sample(filtered);
-            console.log(random);
-
-            ctx.replyWithChatAction('upload_video');
-            return ctx.replyWithVideo({ url: random['url'] });
-          } else {
-            return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
-          }
-
+          return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
         }
 
-      });
+      }
 
     });
+
 
   }
 
   tenorSearch(ctx) {
 
-
     let query = ctx.match[1];
-
+    let replyTo = ctx.update.message.message_id;
 
     var options = {
       method: 'GET',
@@ -121,7 +121,8 @@ class Google {
       qs: {
         tag: query,
         key: '41S2CSB7PHJ7',
-        safesearch: 'off' },
+        safesearch: 'off'
+      },
       headers: {
         'cache-control': 'no-cache'
       }
@@ -131,22 +132,20 @@ class Google {
       if (error) { console.log('debug', error) };
       let data = JSON.parse(body);
 
-      if (!data.results.length) {
-          return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
-      }
-      else{
+      if (data.results.length == 0) {
+        return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+      } else {
 
-          let filtered = filterTenorResults(data);
+        let filtered = filterTenorResults(data);
 
-          if (filtered.length) {
-            let random = _.sample(filtered);
-            console.log(random);
+        if (filtered.length) {
+          let random = _.sample(filtered);
 
-            ctx.replyWithChatAction('upload_video');
-            return ctx.replyWithVideo({ url: random['url'] });
-          } else {
-            return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
-          }
+          ctx.replyWithChatAction('upload_video');
+          return ctx.replyWithVideo({ url: random['url'] });
+        } else {
+          return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
+        }
 
       }
 
@@ -163,10 +162,8 @@ function filterImageResults(data) {
 
   let filtered = data.items.map(function(gif) {
     let obj = {};
-    // console.log(gif.image.byteSize);
-    // console.log(gif.link);
 
-    if (gif.image.byteSize < '3097152' && gif.image.byteSize > '524288') {
+    if (gif.image.byteSize < '2497152' && gif.image.byteSize > '64288') {
       //if (gif.image.byteSize <= '2097152' && gif.link.startsWith("https")) {
       obj['url'] = gif.link;
       return obj;
@@ -183,8 +180,8 @@ function filterTenorResults(data) {
 
   let filtered = data.results.map(function(gif) {
     let obj = {};
-      obj['url'] = gif.media[0]['mp4']['url'];
-      return obj;
+    obj['url'] = gif.media[0]['mp4']['url'];
+    return obj;
   });
 
   filtered = _.remove(filtered, undefined);
