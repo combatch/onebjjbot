@@ -26,6 +26,68 @@ class Users {
   }
 
 
+  /**
+   * get message id of the pinned post
+   * @param {object} ctx - telegraf context object.
+   * @return {int} the id .
+   */
+  updateGroupId(oldID, newID) {
+
+
+    return knex('Votes')
+      .where({
+        group_id: oldID
+      })
+      .update({
+        group_id: newID
+      })
+      .then(function(rows) {
+
+
+        return knex('Users')
+          .where({
+            group_id: oldID
+          })
+          .update({
+            group_id: newID
+          })
+          .then(()=>{
+          })
+
+      })
+      .catch(function(err) {
+        winston.log('error', 'in the catch', err);
+        ctx.reply(`${err} `);
+      });
+
+
+  }
+
+  /**
+   * get message id of the pinned post
+   * @param {object} ctx - telegraf context object.
+   * @return {int} the id .
+   */
+  getStickiedMessageId(ctx) {
+
+    let group = ctx.chat.id;
+
+    return knex('Votes')
+      .where({
+        group_id: group,
+        isStickied: true
+      })
+      .first('message_id')
+      .then(function(rows) {
+
+        if (!_.isEmpty(rows)) {
+          let messageId = rows['message_id'];
+          return messageId;
+        }
+
+      })
+  }
+
 
 
   /**
@@ -96,49 +158,19 @@ class Users {
 
 
   /**
-   * Finds user by id.
-   * @param {int} id - the id of the user.
-   * @return {obj} returns user obj.
-   */
-  static getUserbyId(id) {
-    let promise = new Promise(function(resolve, reject) {
-      knex('Users')
-        .where('telegram_id', id)
-        .first()
-        .then((data) => {
-          winston.log('debug', 'getuser function', data)
-          if (_.isEmpty(data)) {
-            winston.log('debug', 'empty object in here');
-          }
-
-          return data;
-        })
-        .catch(function(err) {
-          winston.log('error', err);
-        })
-    })
-  }
-
-
-
-  /**
    * retrieves the scores for users in the chat group.
    * @param {object} ctx - telegraf context object.
    * @return {array} an array of the usernames and scores.
    */
-  getLeaderboard(ctx) {
-    // /leaderboard endpoint
-    // takes in groupid param
-    // generate leaderboard on front-end
-    // send as image.
-
+  getLeaderboard(ctx, messageId) {
+    // send as image later.
 
     let group = ctx.chat.id;
     let title = ctx.chat.title;
 
     if (ctx.message.chat.type != 'private') {
 
-     return knex('Users')
+      return knex('Users')
         .where({
           group_id: group
         })
@@ -146,31 +178,112 @@ class Users {
         .limit(15)
         .orderBy('points', 'desc')
         .then((data) => {
+          let text = buildLeaderboardHTML(data);
+          let latestDate = Date.now();
 
-          let cleanObj = _.map(data, formatObject);
 
-          let text = cleanObj.map((data, index) => {
-            let string = '';
-            string += `${index + 1} : <i>${data.name}</i> -- ${data.points}`;
-            if (index === 0) {
-              string += ' 👑';
-            }
-            return string;
-          })
-          text = text.join('\n');
+          if (messageId) {
+            ctx.replyWithHTML(`updated leaderboard`, { reply_to_message_id: messageId });
+            return ctx.telegram.editMessageText(group, messageId, '', `<b>${title} Leaderboard</b>\n\n${text} \n\n Last Update: ${latestDate}`, { disable_notification: true, parse_mode: 'html' })
+              .catch((err) => {
+                winston.log('error', err);
+                ctx.replyWithHTML(`${err}`);
+              })
+          } else {
+            return ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true });
+          }
 
-            return text;
-
-        })
-        .then((text) =>{
-          console.log(text);
-          return returnStickiedPost(ctx,text);
         })
         .catch(function(err) {
           winston.log('error', err);
         })
     }
   }
+
+  /**
+   * upon pinning a post, save that message_id to database.
+   * @param {object} ctx - telegraf context object.
+   * @return {bool}
+   */
+  saveStickyId(ctx) {
+    let group = ctx.chat.id;
+    let stickiedPostId = ctx.update.message.pinned_message.message_id;
+
+    return knex('Votes')
+      .insert({
+        group_id: group,
+        message_id: stickiedPostId,
+        isStickied: true
+      })
+      .then(() => {
+        return true;
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+        return false;
+      })
+
+  }
+
+
+  /**
+   * update message_id to latest pinned message.
+   * @param {object} ctx - telegraf context object.
+   * @return {bool}
+   */
+  updateStickyId(ctx) {
+
+    let group = ctx.chat.id;
+    let stickiedPostId = ctx.update.message.pinned_message.message_id;
+
+    return knex('Votes')
+      .where({
+        group_id: group,
+        isStickied: true
+      })
+      .update({
+        group_id: group,
+        message_id: stickiedPostId,
+        isStickied: true
+      })
+      .then(() => {
+        return true;
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+        return false;
+      })
+
+  }
+
+  /**
+   * see if a pinned message exists for group.
+   * @param {object} ctx - telegraf context object.
+   * @return {bool}
+   */
+  checkStickyId(ctx) {
+    let group = ctx.chat.id;
+
+    return knex('Votes')
+      .where({
+        group_id: group,
+        isStickied: true
+      })
+      .then((rows) => {
+        if (!_.isEmpty(rows)) {
+          return true;
+        }
+        return false;
+
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+        return false;
+      })
+
+  }
+
+
 
 
   castVote(ctx, botName) {
@@ -232,7 +345,7 @@ class Users {
             if (_.isEmpty(Countobj)) {
               winston.log('info', `${voterUserId} changed their vote to ${data}`);
             } else {
-              // calculate score increment here ?
+
               knex('Users')
                 .where({
                   telegram_id: id,
@@ -259,11 +372,7 @@ class Users {
 
             }
 
-
-
-
           })
-
 
       })
       .catch(function(err) {
@@ -277,14 +386,9 @@ class Users {
 
   countVotes(ctx, data) {
 
-
     winston.log('info', 'attempting to count votes');
-
-
     let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
-    winston.log('debug', 'message id is ', messageId);
-    winston.log('debug', 'data is', data);
-
+    winston.log('info', 'data is', data);
 
     knex('Votes')
       .where({
@@ -332,6 +436,21 @@ function rebuildMenuButtons(ctx, countObj) {
 }
 
 
+function buildLeaderboardHTML(data) {
+  let cleanObj = _.map(data, formatObject);
+
+  let text = cleanObj.map((data, index) => {
+    let string = '';
+    string += `${index + 1} : <i>${data.name}</i> -- ${data.points}`;
+    if (index === 0) {
+      string += ' 👑';
+    }
+    return string;
+  })
+  text = text.join('\n');
+
+  return text;
+}
 
 
 
@@ -343,69 +462,7 @@ function formatObject(dirtyObj) {
   return obj;
 }
 
-function returnStickiedPost(ctx, text) {
 
-
-  let group = ctx.chat.id;
-  let title = ctx.chat.title;
-  var stickiedPostId;
-
-  return
-  knex('Votes')
-    .where({
-      group_id: group,
-      isStickied: true
-    })
-    .first('message_id')
-    .then(function(rows) {
-
-      if (rows == 0) {
-
-        console.log('nothing found in stickied so stickiying a post');
-
-
-        ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true }).
-        then((data) => {
-          console.log('here is new data');
-
-          console.log(data);
-          stickiedPostId = data.message_id;
-
-          return knex('Votes')
-            .insert({
-              group_id: group,
-              message_id: stickiedPostId,
-              isStickied: true
-            })
-
-
-        });
-
-
-      } else {
-        let messageId = rows['message_id'];
-        console.log(' post is stickied, do stuff');
-
-
-        return Promise.resolve(messageId);
-
-        return messageId;
-
-
-        // ctx.editMessageText((`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true }).catch((err) => winston.log('error', err));
-
-
-      }
-
-
-
-    });
-
-
-
-
-
-}
 
 
 export default Users;

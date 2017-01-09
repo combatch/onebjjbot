@@ -8,6 +8,7 @@ import Users from './imports/users';
 import Vote from './imports/vote';
 import Google from './imports/google';
 import Files from './imports/fileStreams';
+import _ from 'lodash';
 
 let env = process.env.NODE_ENV || 'development';
 
@@ -60,55 +61,47 @@ bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
 });
 
 bot.hears(/\/ss (.+)/, (ctx) => {
-
-  const ss = new ScreenShots(); // the class
-  ss.createScreenshot(ctx); // the method
-
+  const ss = new ScreenShots();
+  return ss.createScreenshot(ctx);
 });
-
-
 
 bot.command('register', (ctx) => {
-  winston.log('debug', 'in register command');
-  user.registerUser(ctx);
+  return user.registerUser(ctx);
 });
 
+bot.on('pinned_message', (ctx) => {
+  let p = Promise.resolve(user.checkStickyId(ctx));
+  p.then((exists) => {
+    if (exists) {
+      return user.updateStickyId(ctx);
+    } else {
+      return user.saveStickyId(ctx);
+    }
+  });
+});
 
+bot.on('migrate_from_chat_id', (ctx) => {
+  let oldID = ctx.update.message.migrate_from_chat_id;
+  let newID = ctx.update.message.chat.id;
+
+  let p = Promise.resolve(user.updateGroupId(oldID, newID));
+  p.then((exists) => {
+    ctx.reply(`converted to supergroup successfully.`);
+  });
+});
 
 bot.command('leaderboard', (ctx) => {
 
-
-  var p = new Promise(function(resolve, reject) {
-     resolve(user.getLeaderboard(ctx));
+  let p = Promise.resolve(user.getStickiedMessageId(ctx));
+  p.then((messageId) => {
+    if (_.isUndefined(messageId)) {
+      winston.log('info', 'no pinned message, posting leaderboard');
+      return user.getLeaderboard(ctx);
+    } else {
+      return user.getLeaderboard(ctx, messageId);
+    }
   });
-  p.then((data) =>{
-    console.log(data);
-  });
-
-
-
-
-
-
-
-
-
-  // var result = user.getLeaderboard(ctx);
-
-  // result.then((rows) => {
-  //   console.log(result);
-  //   console.log(rows);
-  // });
-
 });
-
-// async function async(ctx) {
-//   var value = await Promise
-//     .resolve('test')
-//     .then(x => 'asdf');
-//   return value;
-// }
-
 
 
 
@@ -117,6 +110,8 @@ bot.command('leaderboard', (ctx) => {
 bot.on('message', (ctx) => {
 
 
+  let lul = "lul";
+  let lulRegEx = new RegExp(lul, "ig");
   let lol = "l+o+l.*";
   let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
@@ -126,7 +121,7 @@ bot.on('message', (ctx) => {
 
   if (ctx.message.reply_to_message) {
 
-    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha') {
+    if (lolRegEx.test(ctx.message.text) ||lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha'|| ctx.message.text == '😂') {
 
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
@@ -162,8 +157,7 @@ bot.action('tearsofjoy', (ctx, next) => {
     .then(() => {
       user.castVote(ctx, bot.options.username);
     })
-
-  .then(next);
+    .then(next);
 })
 bot.action('thumbsup', (ctx, next) => {
   let data = ctx.update.callback_query.data;
