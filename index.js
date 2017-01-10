@@ -152,55 +152,85 @@ bot.on('message', (ctx) => {
 
 bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
+  let group = ctx.update.callback_query.message.chat.id;
+  let title = ctx.update.callback_query.message.chat.title;
 
   return ctx.answerCallbackQuery('selected 😂')
     .then(() => {
-      user.castVote(ctx, bot.options.username);
+      return user.castVote(ctx, bot.options.username);
+    })
+    .then(()=>{
+      return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
 })
 bot.action('thumbsup', (ctx, next) => {
   let data = ctx.update.callback_query.data;
+  let group = ctx.update.callback_query.message.chat.id;
+  let title = ctx.update.callback_query.message.chat.title;
 
   return ctx.answerCallbackQuery('selected 👍')
     .then(() => {
-      user.castVote(ctx, bot.options.username);
+      return user.castVote(ctx, bot.options.username);
+    })
+    .then(()=>{
+      return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
 })
 bot.action('heart', (ctx, next) => {
   let data = ctx.update.callback_query.data;
+  let group = ctx.update.callback_query.message.chat.id;
+  let title = ctx.update.callback_query.message.chat.title;
 
   return ctx.answerCallbackQuery('selected ❤')
     .then(() => {
-      user.castVote(ctx, bot.options.username);
+      return user.castVote(ctx, bot.options.username);
+    })
+    .then(()=>{
+      return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);;
 })
 bot.action('fire', (ctx, next) => {
   let data = ctx.update.callback_query.data;
+  let group = ctx.update.callback_query.message.chat.id;
+  let title = ctx.update.callback_query.message.chat.title;
 
   return ctx.answerCallbackQuery('selected 🔥')
     .then(() => {
-      user.castVote(ctx, bot.options.username);
+      return user.castVote(ctx, bot.options.username);
+    })
+    .then(()=>{
+      return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
 })
 bot.action('clap', (ctx, next) => {
   let data = ctx.update.callback_query.data;
+  let group = ctx.update.callback_query.message.chat.id;
+  let title = ctx.update.callback_query.message.chat.title;
 
   return ctx.answerCallbackQuery('selected 👏')
     .then(() => {
-      user.castVote(ctx, bot.options.username);
+      return user.castVote(ctx, bot.options.username);
+    })
+    .then(()=>{
+      return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
 })
 bot.action('grin', (ctx, next) => {
   let data = ctx.update.callback_query.data;
+  let group = ctx.update.callback_query.message.chat.id;
+  let title = ctx.update.callback_query.message.chat.title;
 
   return ctx.answerCallbackQuery('selected 😀')
     .then(() => {
-      user.castVote(ctx, bot.options.username);
+      return user.castVote(ctx, bot.options.username);
+    })
+    .then(()=>{
+      return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
 })

@@ -1,6 +1,6 @@
 {
   "name": "onebjjbot",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "telegram bot written in node.js for one jiu jitsu. async/await",
   "main": "index.js",
   "scripts": {

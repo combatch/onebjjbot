@@ -51,8 +51,7 @@ class Users {
           .update({
             group_id: newID
           })
-          .then(()=>{
-          })
+          .then(() => {})
 
       })
       .catch(function(err) {
@@ -297,7 +296,7 @@ class Users {
     let chatId = ctx.update.callback_query.message.chat.id;
     let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
 
-    knex('Votes')
+    return knex('Votes')
       .where({
         telegram_id: voterUserId,
         message_id: messageId
@@ -346,7 +345,7 @@ class Users {
               winston.log('info', `${voterUserId} changed their vote to ${data}`);
             } else {
 
-              knex('Users')
+              return knex('Users')
                 .where({
                   telegram_id: id,
                   group_id: chatId
@@ -357,9 +356,9 @@ class Users {
                   if (err) return console.error(err);
                   if (rows == 0) {
                     if (name.toLowerCase() == botName.toLowerCase()) {
-                      ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+                      return ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
                     } else {
-                      ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+                      return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
                     }
 
                   } else {
@@ -405,6 +404,43 @@ class Users {
       .catch(function(err) {
         winston.log('error', err);
       })
+
+  }
+
+
+  updateLeaderboard(ctx, group, title) {
+
+    let p = Promise
+      .resolve(this.getStickiedMessageId(ctx))
+      .then((messageId) => {
+
+        return knex('Users')
+          .where({
+            group_id: group
+          })
+          .whereNotNull('points')
+          .limit(15)
+          .orderBy('points', 'desc')
+          .then((data) => {
+            let text = buildLeaderboardHTML(data);
+            let latestDate = Date.now();
+
+            return ctx.telegram.editMessageText(group, messageId, '', `<b>${title} Leaderboard</b>\n\n${text} \n\n Last Update: ${latestDate}`, { disable_notification: true, parse_mode: 'html' })
+              .catch((err) => {
+                winston.log('error', err);
+                ctx.replyWithHTML(`${err}`);
+              })
+
+          })
+          .catch(function(err) {
+            winston.log('error', err);
+          })
+
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+      })
+
 
   }
 
