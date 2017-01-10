@@ -52,12 +52,9 @@ class Google {
       let data = JSON.parse(body);
 
       if (data.error) {
-        console.log('error', data.error);
         return ctx.reply(`${data.error.message} for foreign language`);
       } else {
-        console.log('info', data);
         let translated = data.data.translations[0].translatedText;
-
         return ctx.reply(`${translated}`, { reply_to_message_id: replyTo });
       }
 
@@ -86,17 +83,17 @@ class Google {
         let filtered = filterImageResults(data);
         if (filtered.length) {
           let random = _.sample(filtered);
-          winston.log('info', random);
+          winston.log('info', 'query : ', query, random);
 
           ctx.replyWithChatAction('upload_video');
-          //return ctx.replyWithVideo({ url: random['url'] });
 
           // saving / uploading from server b/c it should be faster
           request(random)
             .pipe(fs.createWriteStream(`${tmp}/${query}.gif`))
             .on("finish", function(data, err) {
               var gif = fs.createReadStream(`${tmp}/${query}.gif`);
-              return ctx.replyWithVideo({ source: gif }, { disable_notification: true });
+              //return ctx.replyWithVideo({ source: gif }, { disable_notification: true });
+              return ctx.replyWithDocument({ url: random['url'], filename: `${query}.gif` }, { disable_notification: true });
             })
 
         } else {

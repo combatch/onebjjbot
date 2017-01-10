@@ -27,7 +27,7 @@ class Users {
 
 
   /**
-   * get message id of the pinned post
+   * convert old group id to new supergroup one
    * @param {object} ctx - telegraf context object.
    * @return {int} the id .
    */
@@ -51,8 +51,7 @@ class Users {
           .update({
             group_id: newID
           })
-          .then(()=>{
-          })
+          .then(() => {})
 
       })
       .catch(function(err) {
@@ -108,7 +107,7 @@ class Users {
 
     if (ctx.message.chat.type != 'private') {
 
-      knex('Users')
+      return knex('Users')
         .where({
           telegram_id: ctx.message.from.id,
           group_id: ctx.chat.id
@@ -297,7 +296,7 @@ class Users {
     let chatId = ctx.update.callback_query.message.chat.id;
     let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
 
-    knex('Votes')
+    return knex('Votes')
       .where({
         telegram_id: voterUserId,
         message_id: messageId
@@ -346,7 +345,7 @@ class Users {
               winston.log('info', `${voterUserId} changed their vote to ${data}`);
             } else {
 
-              knex('Users')
+              return knex('Users')
                 .where({
                   telegram_id: id,
                   group_id: chatId
@@ -357,9 +356,9 @@ class Users {
                   if (err) return console.error(err);
                   if (rows == 0) {
                     if (name.toLowerCase() == botName.toLowerCase()) {
-                      ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+                      return ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
                     } else {
-                      ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+                      return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
                     }
 
                   } else {
@@ -396,11 +395,8 @@ class Users {
       })
       .select('vote')
       .then(function(rows) {
-        winston.log('debug', 'rows info', rows);
-
         let Countobj = _.countBy(rows, 'vote');
         rebuildMenuButtons(ctx, Countobj);
-
       })
       .catch(function(err) {
         winston.log('error', err);
@@ -417,7 +413,7 @@ class Users {
 function rebuildMenuButtons(ctx, countObj) {
 
   let originalMessageId = ctx.update.callback_query.message.reply_to_message.message_id;
-  let latestDate = ctx.update.callback_query.message.edit_date || '';
+  let latestDate = ctx.update.callback_query.message.edit_date || Date.now();
 
   return ctx.editMessageText(`<i>choose a button to upvote</i> (last updated: ${latestDate})`, Extra
     .inReplyTo(originalMessageId)
