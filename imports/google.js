@@ -4,11 +4,14 @@ import conf from '../config/config.js';
 import _ from 'lodash';
 import request from 'request';
 import fs from 'fs';
+import YouTube from 'youtube-node';
 
 let tmp = path.resolve('tmp');
+let youTube = new YouTube();
+
+youTube.setKey(conf.apis.youtube);
 
 
-//let env = process.env.NODE_ENV || 'development';
 
 
 /** Class representing knex Google. */
@@ -80,7 +83,7 @@ class Google {
         return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
       } else {
 
-        let filtered = filterImageResults(data);
+        let filtered = filterGifResults(data);
         if (filtered.length) {
           let random = _.sample(filtered);
           winston.log('info', 'query : ', query, random);
@@ -94,6 +97,50 @@ class Google {
               var gif = fs.createReadStream(`${tmp}/${query}.gif`);
               //return ctx.replyWithVideo({ source: gif }, { disable_notification: true });
               return ctx.replyWithDocument({ url: random['url'], filename: `${query}.gif` }, { disable_notification: true });
+            })
+
+        } else {
+          return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
+        }
+
+      }
+
+    });
+
+
+  }
+
+
+  imgSearch(ctx) {
+
+    let query = ctx.match[1].replace(/[?=]/g, " ");
+    let replyTo = ctx.update.message.message_id;
+
+    request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&imgType=photo&num=5&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
+      if (error) {
+        console.log('debug', error)
+        return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
+      }
+
+      let data = JSON.parse(body);
+
+      if (data.searchInformation.totalResults == 0) {
+        return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+      } else {
+
+        let filtered = filterImageResults(data);
+
+        if (filtered.length) {
+          let random = _.sample(filtered);
+          winston.log('info', 'query : ', query, random);
+          ctx.replyWithChatAction('upload_photo');
+
+          // saving / uploading from server b/c it should be faster
+          request(random)
+            .pipe(fs.createWriteStream(`${tmp}/${query}${random['extension']}`))
+            .on("finish", function(data, err) {
+              var gif = fs.createReadStream(`${tmp}/${query}${random['extension']}`);
+              return ctx.replyWithPhoto({ url: random['url'], filename: `${query}${random['extension']}` }, { disable_notification: true });
             })
 
         } else {
@@ -153,9 +200,52 @@ class Google {
   }
 
 
+  searchYoutube(ctx) {
+
+    let query = ctx.match[1].replace(/[?=]/g, " ");
+    let replyTo = ctx.update.message.message_id;
+
+    youTube.search(query, 3, function(error, data) {
+
+      if (error) { console.log('debug', error) };
+
+      if (data.pageInfo.totalResults != 0) {
+
+        let filtered = filterYoutubeResults(data);
+        if (filtered.length) {
+          let random = _.sample(filtered);
+
+          return ctx.reply(`https://www.youtube.com/watch?v=${random.url}`);
+        } else {
+          return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
+        }
+
+      } else {
+        return ctx.reply(`no valid results found for ${query}`, { reply_to_message_id: replyTo });
+      }
+
+    });
+  }
+
 }
 
-function filterImageResults(data) {
+function filterYoutubeResults(data) {
+
+  let filtered = data.items.map(function(vid) {
+    let obj = {};
+
+    if (vid.id.kind == 'youtube#video') {
+      obj['url'] = vid.id.videoId;
+      return obj;
+    }
+  });
+
+  filtered = _.remove(filtered, undefined);
+  return filtered;
+}
+
+
+function filterGifResults(data) {
 
   let filtered = data.items.map(function(gif) {
     let obj = {};
@@ -165,6 +255,28 @@ function filterImageResults(data) {
       obj['url'] = gif.link;
       return obj;
     }
+  });
+
+  filtered = _.remove(filtered, undefined);
+  return filtered;
+
+}
+
+function filterImageResults(data) {
+
+  let allowedExtensions = [".jpg", ".jpeg", ".png", ".webp", ".bmp"];
+  let filtered = data.items.map(function(image) {
+
+    let obj = {};
+    let imgURL = image.link;
+    let extension = path.extname(imgURL);
+
+    if (isInArray(extension, allowedExtensions)) {
+      obj['url'] = image.link;
+      obj['extension'] = extension;
+      return obj;
+    }
+
   });
 
   filtered = _.remove(filtered, undefined);
@@ -185,6 +297,12 @@ function filterTenorResults(data) {
   return filtered;
 
 }
+
+function isInArray(value, array) {
+  return array.indexOf(value) > -1;
+}
+
+
 
 
 
