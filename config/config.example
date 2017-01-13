@@ -18,7 +18,10 @@ let config = {
   apis:{
     "TRANSLATE" : "asdf",
     "CX" : "asdf",
-    "IMAGE" : "asdf"
+    "IMAGE" : "asdf",
+    "youtube": "asdf",
+    "btcaveragepublic": "asdf",
+    "btcaverageprivate": "asdf"
   }
 }
 

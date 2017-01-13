@@ -25,11 +25,11 @@ class ScreenShots {
    * @param {object} ctx - telegraf context object.
    * @return {boolean} i dunno lol.
    */
-  createScreenshot(ctx) {
+  createScreenshot(ctx, url,  captionText) {
 
     winston.log('debug', 'inside create screenshot method');
 
-    let query = ctx.match[1];
+    let query = url || ctx.match[1];
     let parsedUrl = URL.parse(query);
     let website = parsedUrl.href;
     let cleanUrl = (parsedUrl.protocol == null ? `http://${website}` : website)
@@ -43,7 +43,7 @@ class ScreenShots {
     let horseman = new Horseman();
     ctx.replyWithChatAction('upload_photo');
 
-    horseman
+    return horseman
       .viewport(3100, 1800)
       .zoom(2)
       .open(cleanUrl)
@@ -57,17 +57,18 @@ class ScreenShots {
             img.scaleToFit(3100, 4000)
               .quality(80)
               .write(screenshotDir, (img) => {
-                ctx.replyWithPhoto({ source: screenshotDir }, { caption: `screenshot of ${cleanUrl}`, disable_notification: true });
+                let caption = captionText || `screenshot of ${cleanUrl}`;
+                return ctx.replyWithPhoto({ source: screenshotDir }, { caption: caption, disable_notification: true });
               })
           })
           .catch((err) => {
-            ctx.reply(`${err}`, { reply_to_message_id: ctx.message.message_id })
+            return ctx.reply(`${err}`, { reply_to_message_id: ctx.message.message_id })
             winston.log('error', err);
           })
 
       })
       .catch((err) => {
-        ctx.reply(`an error occured with that URL. check logs for more info`, { reply_to_message_id: ctx.message.message_id })
+        return ctx.reply(`an error occured with that URL. check logs for more info`, { reply_to_message_id: ctx.message.message_id })
         winston.log('error', err);
       })
       .close();

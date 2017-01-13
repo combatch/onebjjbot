@@ -7,6 +7,7 @@ import ScreenShots from './imports/screenshots';
 import Users from './imports/users';
 import Vote from './imports/vote';
 import Google from './imports/google';
+import Bitcoin from './imports/bitcoin';
 import Files from './imports/fileStreams';
 import _ from 'lodash';
 
@@ -21,6 +22,7 @@ const migrations = new Knex();
 const user = new Users();
 const vote = new Vote();
 const google = new Google();
+const bitcoin = new Bitcoin();
 
 
 migrations.migrateLatest();
@@ -37,8 +39,32 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
+bot.hears(/\/balance ([13][a-km-zA-HJ-NP-Z0-9]{26,33}$)/, (ctx) => {
+  return bitcoin.getBalance(ctx);
+});
+
+bot.command('coinbase', (ctx) => {
+  return bitcoin.getCoinbaseExchangeRate(ctx);
+});
+
+
+bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, (ctx) => {
+  return bitcoin.convertToBitcoin(ctx);
+});
+bot.hears(/\/btc/i, (ctx) => {
+  return bitcoin.getBitcoinityChart(ctx);
+});
+
 bot.hears(/\gif (.+)/i, (ctx) => {
   return google.getGifs(ctx);
+});
+
+bot.hears(/\youtube (.+)/i, (ctx) => {
+  return google.searchYoutube(ctx);
+});
+
+bot.hears(/\img (.+)/i, (ctx) => {
+  return google.imgSearch(ctx);
 });
 
 bot.hears(/mfw (.+)/i, (ctx) => {
@@ -62,7 +88,7 @@ bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
 
 bot.hears(/\/ss (.+)/, (ctx) => {
   const ss = new ScreenShots();
-  return ss.createScreenshot(ctx);
+  return ss.createScreenshot(ctx, '');
 });
 
 bot.command('register', (ctx) => {
@@ -89,6 +115,40 @@ bot.on('migrate_from_chat_id', (ctx) => {
     ctx.reply(`converted to supergroup successfully.`);
   });
 });
+
+
+// bot.on(['video', 'document'], (ctx) => {
+
+//   let downloadedFileName, newFileName;
+
+//   let filename = ctx.update.message.document.file_name;
+//   let fileid = ctx.update.message.document.file_id;
+
+//   winston.log('debug', 'stuff', filename);
+//   winston.log('debug', 'stuff', fileid);
+
+//   ctx.telegram.getFileLink(fileid)
+//     .then(data => {
+//       downloadedFileName = data.split('/').pop();
+//       newFileName = filename.split('.');
+//       newFileName = newFileName[0];
+
+//       ctx.reply(`attempting to convert file to .mp4`, { disable_notification: true });
+//     })
+//     .then((stuff) => {
+//       winston.log('debug', 'stuff', stuff);
+//       ctx.telegram.getFile(fileid)
+//       .then(asdf => {
+//         winston.log('debug', 'asdf', asdf);
+//         // get file_path
+//         // then GET from
+//         // https://api.telegram.org/file/bot<token>/<file_path>
+//         //
+//       })
+
+//     })
+
+// });
 
 bot.command('leaderboard', (ctx) => {
 
@@ -121,7 +181,7 @@ bot.on('message', (ctx) => {
 
   if (ctx.message.reply_to_message) {
 
-    if (lolRegEx.test(ctx.message.text) ||lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha'|| ctx.message.text == '😂') {
+    if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == '😂') {
 
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
@@ -159,7 +219,7 @@ bot.action('tearsofjoy', (ctx, next) => {
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
-    .then(()=>{
+    .then(() => {
       return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
@@ -173,7 +233,7 @@ bot.action('thumbsup', (ctx, next) => {
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
-    .then(()=>{
+    .then(() => {
       return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
@@ -187,7 +247,7 @@ bot.action('heart', (ctx, next) => {
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
-    .then(()=>{
+    .then(() => {
       return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);;
@@ -201,7 +261,7 @@ bot.action('fire', (ctx, next) => {
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
-    .then(()=>{
+    .then(() => {
       return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
@@ -215,7 +275,7 @@ bot.action('clap', (ctx, next) => {
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
-    .then(()=>{
+    .then(() => {
       return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
@@ -229,11 +289,14 @@ bot.action('grin', (ctx, next) => {
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
-    .then(()=>{
+    .then(() => {
       return user.updateLeaderboard(ctx, group, title);
     })
     .then(next);
 })
+
+
+
 
 
 bot.catch((err) => {

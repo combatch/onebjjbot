@@ -27,7 +27,7 @@ class Users {
 
 
   /**
-   * get message id of the pinned post
+   * convert old group id to new supergroup one
    * @param {object} ctx - telegraf context object.
    * @return {int} the id .
    */
@@ -107,7 +107,7 @@ class Users {
 
     if (ctx.message.chat.type != 'private') {
 
-      knex('Users')
+      return knex('Users')
         .where({
           telegram_id: ctx.message.from.id,
           group_id: ctx.chat.id
@@ -395,11 +395,8 @@ class Users {
       })
       .select('vote')
       .then(function(rows) {
-        winston.log('debug', 'rows info', rows);
-
         let Countobj = _.countBy(rows, 'vote');
         rebuildMenuButtons(ctx, Countobj);
-
       })
       .catch(function(err) {
         winston.log('error', err);
@@ -453,7 +450,7 @@ class Users {
 function rebuildMenuButtons(ctx, countObj) {
 
   let originalMessageId = ctx.update.callback_query.message.reply_to_message.message_id;
-  let latestDate = ctx.update.callback_query.message.edit_date || '';
+  let latestDate = ctx.update.callback_query.message.edit_date || Date.now();
 
   return ctx.editMessageText(`<i>choose a button to upvote</i> (last updated: ${latestDate})`, Extra
     .inReplyTo(originalMessageId)
