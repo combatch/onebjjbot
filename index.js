@@ -7,6 +7,7 @@ import ScreenShots from './imports/screenshots';
 import Users from './imports/users';
 import Vote from './imports/vote';
 import Google from './imports/google';
+import Bitcoin from './imports/bitcoin';
 import Files from './imports/fileStreams';
 import _ from 'lodash';
 
@@ -21,6 +22,7 @@ const migrations = new Knex();
 const user = new Users();
 const vote = new Vote();
 const google = new Google();
+const bitcoin = new Bitcoin();
 
 
 migrations.migrateLatest();
@@ -36,6 +38,22 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
+
+bot.hears(/\/balance ([13][a-km-zA-HJ-NP-Z0-9]{26,33}$)/, (ctx) => {
+  return bitcoin.getBalance(ctx);
+});
+
+bot.command('coinbase', (ctx) => {
+  return bitcoin.getCoinbaseExchangeRate(ctx);
+});
+
+
+bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, (ctx) => {
+  return bitcoin.convertToBitcoin(ctx);
+});
+bot.hears(/\/btc/i, (ctx) => {
+  return bitcoin.getBitcoinityChart(ctx);
+});
 
 bot.hears(/\gif (.+)/i, (ctx) => {
   return google.getGifs(ctx);
@@ -62,7 +80,7 @@ bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
 
 bot.hears(/\/ss (.+)/, (ctx) => {
   const ss = new ScreenShots();
-  return ss.createScreenshot(ctx);
+  return ss.createScreenshot(ctx, '');
 });
 
 bot.command('register', (ctx) => {
@@ -234,6 +252,9 @@ bot.action('grin', (ctx, next) => {
     })
     .then(next);
 })
+
+
+
 
 
 bot.catch((err) => {
