@@ -95,8 +95,8 @@ class Google {
             .pipe(fs.createWriteStream(`${tmp}/${query}.gif`))
             .on("finish", function(data, err) {
               var gif = fs.createReadStream(`${tmp}/${query}.gif`);
-              //return ctx.replyWithVideo({ source: gif }, { disable_notification: true });
-              return ctx.replyWithDocument({ url: random['url'], filename: `${query}.gif` }, { disable_notification: true });
+              return ctx.replyWithVideo({ source: gif }, { disable_notification: true });
+              //return ctx.replyWithDocument({ url: random['url'], filename: `${query}.gif` }, { disable_notification: true });
             })
 
         } else {
@@ -250,7 +250,7 @@ function filterGifResults(data) {
   let filtered = data.items.map(function(gif) {
     let obj = {};
 
-    if (gif.image.byteSize < '2497152' && gif.image.byteSize > '64288') {
+    if (gif.image.byteSize < '2497152' && gif.image.byteSize > '101788') {
       //if (gif.image.byteSize <= '2097152' && gif.link.startsWith("https")) {
       obj['url'] = gif.link;
       return obj;
