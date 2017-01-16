@@ -101,7 +101,7 @@ class Bitcoin {
     let options = {
       method: 'GET',
       url: 'https://apiv2.bitcoinaverage.com/convert/global',
-      qs: { from: from, to: to, amount: amount },
+      qs: { from: fromCurrency, to: to, amount: amount },
       headers: { 'cache-control': 'no-cache' }
     };
 
