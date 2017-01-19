@@ -23,6 +23,7 @@ const user = new Users();
 const vote = new Vote();
 const google = new Google();
 const bitcoin = new Bitcoin();
+const file = new Files();
 
 
 migrations.migrateLatest();
@@ -67,7 +68,7 @@ bot.hears(/\img (.+)/i, (ctx) => {
   return google.imgSearch(ctx);
 });
 
-bot.hears(/mfw (.+)/i, (ctx) => {
+bot.hears(/giphy (.+)/i, (ctx) => {
   return google.tenorSearch(ctx);
 });
 
@@ -117,38 +118,9 @@ bot.on('migrate_from_chat_id', (ctx) => {
 });
 
 
-// bot.on(['video', 'document'], (ctx) => {
-
-//   let downloadedFileName, newFileName;
-
-//   let filename = ctx.update.message.document.file_name;
-//   let fileid = ctx.update.message.document.file_id;
-
-//   winston.log('debug', 'stuff', filename);
-//   winston.log('debug', 'stuff', fileid);
-
-//   ctx.telegram.getFileLink(fileid)
-//     .then(data => {
-//       downloadedFileName = data.split('/').pop();
-//       newFileName = filename.split('.');
-//       newFileName = newFileName[0];
-
-//       ctx.reply(`attempting to convert file to .mp4`, { disable_notification: true });
-//     })
-//     .then((stuff) => {
-//       winston.log('debug', 'stuff', stuff);
-//       ctx.telegram.getFile(fileid)
-//       .then(asdf => {
-//         winston.log('debug', 'asdf', asdf);
-//         // get file_path
-//         // then GET from
-//         // https://api.telegram.org/file/bot<token>/<file_path>
-//         //
-//       })
-
-//     })
-
-// });
+bot.on(['video', 'document'], (ctx) => {
+  return file.convertToMp4(ctx);
+});
 
 bot.command('leaderboard', (ctx) => {
 
