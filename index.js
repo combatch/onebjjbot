@@ -192,10 +192,15 @@ bot.action('tearsofjoy', (ctx, next) => {
       return user.castVote(ctx, bot.options.username);
     })
     .then(() => {
-      return user.updateLeaderboard(ctx, group, title);
+      let p = Promise.resolve(user.getStickiedMessageId(ctx));
+      p.then((messageId) => {
+        if (!_.isUndefined(messageId)) {
+          return user.updateLeaderboard(ctx, group, title);
+        }
+      })
     })
     .then(next);
-})
+});
 bot.action('thumbsup', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
@@ -206,10 +211,15 @@ bot.action('thumbsup', (ctx, next) => {
       return user.castVote(ctx, bot.options.username);
     })
     .then(() => {
-      return user.updateLeaderboard(ctx, group, title);
+      let p = Promise.resolve(user.getStickiedMessageId(ctx));
+      p.then((messageId) => {
+        if (!_.isUndefined(messageId)) {
+          return user.updateLeaderboard(ctx, group, title);
+        }
+      })
     })
     .then(next);
-})
+});
 bot.action('heart', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
@@ -220,10 +230,15 @@ bot.action('heart', (ctx, next) => {
       return user.castVote(ctx, bot.options.username);
     })
     .then(() => {
-      return user.updateLeaderboard(ctx, group, title);
+      let p = Promise.resolve(user.getStickiedMessageId(ctx));
+      p.then((messageId) => {
+        if (!_.isUndefined(messageId)) {
+          return user.updateLeaderboard(ctx, group, title);
+        }
+      })
     })
     .then(next);;
-})
+});
 bot.action('fire', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
@@ -234,10 +249,15 @@ bot.action('fire', (ctx, next) => {
       return user.castVote(ctx, bot.options.username);
     })
     .then(() => {
-      return user.updateLeaderboard(ctx, group, title);
+      let p = Promise.resolve(user.getStickiedMessageId(ctx));
+      p.then((messageId) => {
+        if (!_.isUndefined(messageId)) {
+          return user.updateLeaderboard(ctx, group, title);
+        }
+      })
     })
     .then(next);
-})
+});
 bot.action('clap', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
@@ -248,10 +268,15 @@ bot.action('clap', (ctx, next) => {
       return user.castVote(ctx, bot.options.username);
     })
     .then(() => {
-      return user.updateLeaderboard(ctx, group, title);
+      let p = Promise.resolve(user.getStickiedMessageId(ctx));
+      p.then((messageId) => {
+        if (!_.isUndefined(messageId)) {
+          return user.updateLeaderboard(ctx, group, title);
+        }
+      })
     })
     .then(next);
-})
+});
 bot.action('grin', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
@@ -262,10 +287,15 @@ bot.action('grin', (ctx, next) => {
       return user.castVote(ctx, bot.options.username);
     })
     .then(() => {
-      return user.updateLeaderboard(ctx, group, title);
+      let p = Promise.resolve(user.getStickiedMessageId(ctx));
+      p.then((messageId) => {
+        if (!_.isUndefined(messageId)) {
+          return user.updateLeaderboard(ctx, group, title);
+        }
+      })
     })
     .then(next);
-})
+});
 
 
 
