@@ -3,13 +3,10 @@ import path from 'path';
 import _ from 'lodash';
 import winston from 'winston';
 import request from 'request';
-import rp from 'request-promise';
 import conf from '../config/config.js';
-
 import ffmpeg from 'fluent-ffmpeg';
 
 let command = ffmpeg();
-
 let env = process.env.NODE_ENV || 'development';
 let token = conf[`${env}`]['token'];
 let tmp = path.resolve('tmp');
@@ -31,10 +28,6 @@ class FileStreams {
     let fileid = ctx.update.message.document.file_id;
     let ext = filename.split('.');
     ext = ext[1];
-    winston.log('debug', 'ext', ext);
-
-    winston.log('debug', 'stuff', filename);
-    winston.log('debug', 'stuff', fileid);
 
     ctx.telegram.getFileLink(fileid)
       .then(data => {
@@ -45,11 +38,8 @@ class FileStreams {
         ctx.reply(`attempting to convert file to .mp4`, { disable_notification: true });
       })
       .then((stuff) => {
-        winston.log('debug', 'stuff', stuff);
         ctx.telegram.getFile(fileid)
           .then(tFile => {
-            winston.log('debug', 'asdf', tFile);
-
 
             var options = {
               method: 'GET',
