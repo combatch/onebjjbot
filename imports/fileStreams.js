@@ -29,47 +29,51 @@ class FileStreams {
     let ext = filename.split('.');
     ext = ext[1];
 
-    ctx.telegram.getFileLink(fileid)
-      .then(data => {
-        downloadedFileName = data.split('/').pop();
-        newFileName = filename.split('.');
-        newFileName = newFileName[0];
+    if (ext == "webm" ||  ext == "mov" ) {
 
-        ctx.reply(`attempting to convert file to .mp4`, { disable_notification: true });
-      })
-      .then((stuff) => {
-        ctx.telegram.getFile(fileid)
-          .then(tFile => {
+      ctx.telegram.getFileLink(fileid)
+        .then(data => {
+          downloadedFileName = data.split('/').pop();
+          newFileName = filename.split('.');
+          newFileName = newFileName[0];
 
-            var options = {
-              method: 'GET',
-              url: `https://api.telegram.org/file/bot${token}/${tFile.file_path}`,
-              headers: { 'cache-control': 'no-cache' }
-            };
+          ctx.reply(`attempting to convert file to .mp4`, { disable_notification: true });
+        })
+        .then((stuff) => {
+          ctx.telegram.getFile(fileid)
+            .then(tFile => {
+
+              var options = {
+                method: 'GET',
+                url: `https://api.telegram.org/file/bot${token}/${tFile.file_path}`,
+                headers: { 'cache-control': 'no-cache' }
+              };
 
 
-            request(options)
-              .pipe(fs.createWriteStream(`${tmp}/${downloadedFileName}`))
-              .on("finish", function(data, err) {
+              request(options)
+                .pipe(fs.createWriteStream(`${tmp}/${downloadedFileName}`))
+                .on("finish", function(data, err) {
 
-                ffmpeg(`${tmp}/${downloadedFileName}`)
-                  .videoCodec('libx264')
-                  //.audioCodec('libmp3lame')
-                  .on('error', function(err) {
-                    winston.log('error', err);
-                    ctx.reply(`${err} `);
-                  })
-                  .save(`${tmp}/${newFileName}.mp4`)
-                  .on('end', function() {
-                    let vid = fs.createReadStream(`${tmp}/${newFileName}.mp4`);
-                    ctx.replyWithVideo({ source: vid, disable_notification: true });
-                  });
+                  ffmpeg(`${tmp}/${downloadedFileName}`)
+                    .videoCodec('libx264')
+                    //.audioCodec('libmp3lame')
+                    .on('error', function(err) {
+                      winston.log('error', err);
+                      ctx.reply(`${err} `);
+                    })
+                    .save(`${tmp}/${newFileName}.mp4`)
+                    .on('end', function() {
+                      let vid = fs.createReadStream(`${tmp}/${newFileName}.mp4`);
+                      ctx.replyWithVideo({ source: vid, disable_notification: true });
+                    });
 
-              })
+                })
 
-          });
-      })
+            });
+        })
 
+
+    }
 
   }
 
