@@ -283,6 +283,38 @@ class Users {
   }
 
 
+  /**
+   * get user who is upvoted the most
+   * get the most upvoted post
+   * most used emoji breakdown
+   *
+   * @param {object} ctx - telegraf context object.
+   * @return {object}
+   */
+  retrieveStats(ctx) {
+    let group = ctx.chat.id;
+
+
+    return knex('Votes')
+      .where({
+        group_id: group,
+        isStickied: true
+      })
+      .then((rows) => {
+        if (!_.isEmpty(rows)) {
+          return true;
+        }
+        return false;
+
+      })
+      .catch(function(err) {
+        winston.log('error', err);
+        return false;
+      })
+
+  }
+
+
 
 
   castVote(ctx, botName) {
@@ -310,6 +342,8 @@ class Users {
               telegram_id: voterUserId,
               message_id: messageId,
               canIncrement: true,
+              group_id: chatId,
+              name: name,
               vote: data
             })
 
