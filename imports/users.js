@@ -319,10 +319,10 @@ class Users {
 
   castVote(ctx, botName) {
 
+    let voter = ctx.update.callback_query.from.first_name;
     let voterUserId = ctx.update.callback_query.from.id;
     let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
     let data = ctx.update.callback_query.data;
-
 
     let id = ctx.update.callback_query.message.reply_to_message.from.id;
     let chatId = ctx.update.callback_query.message.chat.id;
@@ -344,6 +344,7 @@ class Users {
               canIncrement: true,
               group_id: chatId,
               name: name,
+              voter: voter,
               vote: data
             })
 

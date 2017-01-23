@@ -1,9 +1,9 @@
 # A Telegram Bot written in Node.js
 
-## using the Telegraf library
+## Bringing Upvotes to Telegram
+
 
 ![header](https://cloud.githubusercontent.com/assets/5941389/22005157/f0e793be-dc15-11e6-8ea8-292dbf54f2e3.png)
-
 
 ## Social Features!
 
@@ -70,10 +70,16 @@
   Make a copy of the `config.example` file found [here](https://github.com/combatch/onebjjbot/blob/master/config/config.example)
 
   This bot uses PostgresQL by default, but can be tweaked to work with MySQL.
+
   To make use of the google APIs, you will need API keys from http://cse.google.com/create/new
+
   A telegram token can be obtained by talking to the [botfather](https://core.telegram.org/bots#6-botfather)
+
   BitcoinAverage API key can be obtained [here](https://bitcoinaverage.com/en/register)
 
+
+
+  Using the [telegraf](https://github.com/telegraf/telegraf) library.
 
 
 
