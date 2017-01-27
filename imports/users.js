@@ -287,6 +287,7 @@ class Users {
    * get user who is upvoted the most
    * get the most upvoted post
    * most used emoji breakdown
+   * voter who votes the most
    *
    * @param {object} ctx - telegraf context object.
    * @return {object}
