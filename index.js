@@ -96,6 +96,10 @@ bot.command('register', (ctx) => {
   return user.registerUser(ctx);
 });
 
+bot.command('stats', (ctx) => {
+  return user.getMostUpvotedPost(ctx);
+});
+
 bot.on('pinned_message', (ctx) => {
   let p = Promise.resolve(user.checkStickyId(ctx));
   p.then((exists) => {

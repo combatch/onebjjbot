@@ -316,6 +316,57 @@ class Users {
   }
 
 
+  /**
+   * get the post with highest count of voters
+   * @param {object} ctx - telegraf context object.
+   * @return {int} the message id.
+   */
+  getMostUpvotedPost(ctx) {
+
+    let group = ctx.chat.id;
+
+    return knex.raw(`
+        SELECT DISTINCT
+          COUNT (
+            "public"."Votes".message_id
+          ) AS message,
+          "public"."Votes".group_id,
+          "public"."Votes".message_id
+        FROM
+          "public"."Votes"
+        WHERE
+          "public"."Votes".group_id = - 1001098497476
+        GROUP BY
+          "public"."Votes".message_id,
+          "public"."Votes".group_id,
+          "public"."Votes".message_id
+        ORDER BY
+          message DESC
+        `)
+      .then(function(rows) {
+        winston.log('debug', 'asdf', rows);
+
+        if (!_.isEmpty(rows)) {
+          let messageId = rows['message_id'];
+
+
+
+          return ctx.replyWithHTML(`most upvoted post `, { reply_to_message_id: messageId });
+
+        }
+
+        let messageId = 473;
+
+        return ctx.replyWithHTML(`most upvoted post `, { reply_to_message_id: messageId });
+
+      })
+  }
+
+
+
+
+
+
 
 
   castVote(ctx, botName) {
