@@ -288,6 +288,7 @@ class Users {
    * get the most upvoted post
    * most used emoji breakdown
    * voter who votes the most
+   * get all time, past 7 days, & past month in one message.
    *
    * @param {object} ctx - telegraf context object.
    * @return {object}
