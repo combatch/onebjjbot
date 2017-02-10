@@ -74,7 +74,7 @@ bot.hears(/giphy (.+)/i, (ctx) => {
   return google.tenorSearch(ctx);
 });
 
-bot.hears(/ud (.+)/i, (ctx) => {
+bot.hears(/\/ud (.+)/i, (ctx) => {
   return dictionary.urbanDictionary(ctx);
 });
 
