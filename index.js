@@ -9,6 +9,7 @@ import Vote from './imports/vote';
 import Google from './imports/google';
 import Bitcoin from './imports/bitcoin';
 import Files from './imports/fileStreams';
+import Dictionary from './imports/dictionary';
 import _ from 'lodash';
 
 let env = process.env.NODE_ENV || 'development';
@@ -24,6 +25,7 @@ const vote = new Vote();
 const google = new Google();
 const bitcoin = new Bitcoin();
 const file = new Files();
+const dictionary = new Dictionary();
 
 
 migrations.migrateLatest();
@@ -72,6 +74,10 @@ bot.hears(/giphy (.+)/i, (ctx) => {
   return google.tenorSearch(ctx);
 });
 
+bot.hears(/ud (.+)/i, (ctx) => {
+  return dictionary.urbanDictionary(ctx);
+});
+
 
 bot.hears(/translate (.+)/i, (ctx) => {
 
@@ -94,6 +100,10 @@ bot.hears(/\/ss (.+)/, (ctx) => {
 
 bot.command('register', (ctx) => {
   return user.registerUser(ctx);
+});
+
+bot.command('stats', (ctx) => {
+  return user.getMostUpvotedPost(ctx);
 });
 
 bot.on('pinned_message', (ctx) => {
