@@ -474,8 +474,11 @@ class Users {
                     if (name.toLowerCase() == botName.toLowerCase()) {
                       return ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
                     } else {
+
+                      return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+
                       // auto register user
-                      return this.registerUser(ctx, true);
+                      //return this.registerUser(ctx, true);
                     }
                   } else {
                     winston.log('info', `${name} has been upvoted in group ${chatId}`);
@@ -579,7 +582,7 @@ function rebuildMenuButtons(ctx, countObj) {
         Markup.callbackButton(`${countObj.heart || ''} ❤`, 'heart'),
         Markup.callbackButton(`${countObj.fire || ''} 🔥`, 'fire'),
         // Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
-        Markup.callbackButton(`${countObj.grin || ''} 💯`, 'hundred')
+        Markup.callbackButton(`${countObj.hundred || ''} 💯`, 'hundred')
       ])));
 
 }
