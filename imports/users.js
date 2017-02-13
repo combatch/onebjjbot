@@ -99,18 +99,18 @@ class Users {
 
     if (auto) {
 
-      chatType = ctx.update.callback_query.message.chat.type;
-      telegram_id = ctx.update.callback_query.message.from.id;
-      group_id = ctx.update.callback_query.message.chat.type != 'private' ? ctx.update.callback_query.message.chat.id : '';
-      message_id = ctx.update.callback_query.message.reply_to_message.message_id;
+      chatType = ctx.update.callback_query.reply_to_message.chat.type;
+      telegram_id = ctx.update.callback_query.reply_to_message.from.id;
+      group_id = ctx.update.callback_query.reply_to_message.chat.type != 'private' ? ctx.update.callback_query.reply_to_message.chat.id : '';
+      message_id = ctx.update.callback_query.reply_to_message.reply_to_message.message_id;
 
       User = {
-        first_name: ctx.update.callback_query.message.from.first_name,
-        last_name: ctx.update.callback_query.message.from.last_name || '',
+        first_name: ctx.update.callback_query.reply_to_message.from.first_name,
+        last_name: ctx.update.callback_query.reply_to_message.from.last_name || '',
         telegram_id: telegram_id,
         group_id: group_id,
-        group_type: ctx.update.callback_query.message.chat.type,
-        group_title: ctx.update.callback_query.message.chat.title
+        group_type: ctx.update.callback_query.reply_to_message.chat.type,
+        group_title: ctx.update.callback_query.reply_to_message.chat.title
       };
 
 
@@ -344,6 +344,8 @@ class Users {
   }
 
 
+
+
   /**
    * get the post with highest count of voters
    * @param {object} ctx - telegraf context object.
@@ -351,7 +353,10 @@ class Users {
    */
   getMostUpvotedPost(ctx) {
 
-    let group = ctx.chat.id;
+    let groupId = ctx.update.message.chat.id;
+    let groupName = ctx.update.message.chat.title;
+    let messageId, count;
+
 
     return knex.raw(`
         SELECT DISTINCT
@@ -362,38 +367,33 @@ class Users {
           "public"."Votes".message_id
         FROM
           "public"."Votes"
+
         WHERE
-          "public"."Votes".group_id = - 1001098497476
+          "public"."Votes".group_id = ${groupId}
         GROUP BY
           "public"."Votes".message_id,
           "public"."Votes".group_id,
           "public"."Votes".message_id
         ORDER BY
           message DESC
+        LIMIT
+          6
         `)
-      .then(function(rows) {
-        winston.log('debug', 'asdf', rows);
+      .then(function(results) {
 
-        if (!_.isEmpty(rows)) {
-          let messageId = rows['message_id'];
+        if (!_.isEmpty(results)) {
+          messageId = results.rows[0]['message_id'];
+          count = results.rows[0]['message'];
 
-
-
-          return ctx.replyWithHTML(`most upvoted post `, { reply_to_message_id: messageId });
-
+          // get more metrics on message id later
+          // test(groupId, messageId);
+          let msg = `<strong>Most upvoted post.</strong>\n<i>With a score of</i> ${count}`;
+          return ctx.replyWithHTML(msg, { reply_to_message_id: messageId });
         }
 
-        let messageId = 473;
-
-        return ctx.replyWithHTML(`most upvoted post `, { reply_to_message_id: messageId });
-
+        return ctx.replyWithHTML(`no results`);
       })
   }
-
-
-
-
-
 
 
 
@@ -474,13 +474,8 @@ class Users {
                     if (name.toLowerCase() == botName.toLowerCase()) {
                       return ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
                     } else {
-
                       // auto register user
-                      winston.log('debug', 'here', ctx.update);
-
                       return this.registerUser(ctx, true);
-                      // return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
-
                     }
                   } else {
                     winston.log('info', `${name} has been upvoted in group ${chatId}`);
@@ -583,8 +578,8 @@ function rebuildMenuButtons(ctx, countObj) {
         Markup.callbackButton(`${countObj.thumbsup || ''} 👍`, 'thumbsup'),
         Markup.callbackButton(`${countObj.heart || ''} ❤`, 'heart'),
         Markup.callbackButton(`${countObj.fire || ''} 🔥`, 'fire'),
-        Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
-        Markup.callbackButton(`${countObj.grin || ''} 😀`, 'grin')
+        // Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
+        Markup.callbackButton(`${countObj.grin || ''} 💯`, 'hundred')
       ])));
 
 }
@@ -617,6 +612,21 @@ function formatObject(dirtyObj) {
 }
 
 
+
+function test(groupId, messageId) {
+  winston.log('debug', 'in here at least');
+
+
+  return knex('Votes')
+    .where({
+      group_id: groupId,
+      message_id: messageId
+    })
+    .then(function(results) {
+      winston.log('debug', 'results', results);
+      return results;
+    })
+}
 
 
 export default Users;
