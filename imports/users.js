@@ -94,23 +94,50 @@ class Users {
    * @param {object} ctx - telegraf context object.
    * @return {boolean} true if successful.
    */
-  registerUser(ctx) {
+  registerUser(ctx, auto) {
+    let chatType, telegram_id, group_id, message_id, User;
 
-    let User = {
-      first_name: ctx.message.from.first_name,
-      last_name: ctx.message.from.last_name || '',
-      telegram_id: ctx.message.from.id,
-      group_id: ctx.chat.type != 'private' ? ctx.chat.id : '',
-      group_type: ctx.chat.type,
-      group_title: ctx.chat.title
-    };
+    if (auto) {
 
-    if (ctx.message.chat.type != 'private') {
+      chatType = ctx.update.callback_query.message.chat.type;
+      telegram_id = ctx.update.callback_query.message.from.id;
+      group_id = ctx.update.callback_query.message.chat.type != 'private' ? ctx.update.callback_query.message.chat.id : '';
+      message_id = ctx.update.callback_query.message.reply_to_message.message_id;
+
+      User = {
+        first_name: ctx.update.callback_query.message.from.first_name,
+        last_name: ctx.update.callback_query.message.from.last_name || '',
+        telegram_id: telegram_id,
+        group_id: group_id,
+        group_type: ctx.update.callback_query.message.chat.type,
+        group_title: ctx.update.callback_query.message.chat.title
+      };
+
+
+    } else {
+      chatType = ctx.message.chat.type;
+      telegram_id = ctx.message.from.id;
+      group_id = ctx.chat.type != 'private' ? ctx.chat.id : '';
+      message_id = ctx.message.message_id;
+
+      User = {
+        first_name: ctx.message.from.first_name,
+        last_name: ctx.message.from.last_name || '',
+        telegram_id: telegram_id,
+        group_id: group_id,
+        group_type: ctx.chat.type,
+        group_title: ctx.chat.title
+      };
+
+    }
+
+
+    if (chatType != 'private') {
 
       return knex('Users')
         .where({
-          telegram_id: ctx.message.from.id,
-          group_id: ctx.chat.id
+          telegram_id: telegram_id,
+          group_id: group_id
         })
         .asCallback((err, rows) => {
           if (err) return console.error(err);
@@ -136,20 +163,20 @@ class Users {
                   })
               })
               .then(function() {
-                return ctx.replyWithHTML(`<b>${User.first_name}</b> has been registered.`, { reply_to_message_id: ctx.message.message_id })
+                return ctx.replyWithHTML(`<b>${User.first_name}</b> has been registered.`, { reply_to_message_id: message_id })
               })
               .catch(function(err) {
                 winston.log('error', 'in the catch', err);
                 ctx.reply(`${err} `);
               });
           } else {
-            return ctx.replyWithHTML(`<b>${User.first_name}</b> is already registered.`, { reply_to_message_id: ctx.message.message_id })
+            return ctx.replyWithHTML(`<b>${User.first_name}</b> is already registered.`, { reply_to_message_id: message_id })
           }
 
         });
 
     } else {
-      return ctx.replyWithHTML(`command not available in private chat.`, { reply_to_message_id: ctx.message.message_id })
+      return ctx.replyWithHTML(`command not available in private chat.`, { reply_to_message_id: message_id })
     }
 
 
@@ -443,12 +470,18 @@ class Users {
 
                   if (err) return console.error(err);
                   if (rows == 0) {
+
                     if (name.toLowerCase() == botName.toLowerCase()) {
                       return ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
                     } else {
-                      return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
-                    }
 
+                      // auto register user
+                      winston.log('debug', 'here', ctx.update);
+
+                      return this.registerUser(ctx, true);
+                      // return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+
+                    }
                   } else {
                     winston.log('info', `${name} has been upvoted in group ${chatId}`);
                   }
