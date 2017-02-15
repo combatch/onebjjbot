@@ -39,25 +39,28 @@ class Dictionary {
 
     request(options, function(error, response, body) {
       if (error) { console.log('debug', error) };
+      let sound;
+
       let data = JSON.parse(body);
 
       if (data.result_type !== 'no_results') {
 
         let results = cleanResults(data.list);
-        let sound = _.sample(data.sounds);
+
+        sound = _.sample(data.sounds);
         topScore = highestScoring(results);
         leastControversial = getleastControversial(results);
 
         if (topScore === leastControversial) {
-          let msg = generateHtml(query, topScore);
-          ctx.replyWithHTML(msg, { disable_notification: true });
+          let msg = generateMarkdown(query, topScore);
+          ctx.replyWithMarkdown(msg, { disable_notification: true });
         } else {
 
-          let msg = generateHtml(query, topScore);
-          let message = generateHtml(query, leastControversial);
-          let combined = `<code>Top Scoring </code> \n${msg} \n <code>Least Controversial </code> \n ${message}`;
+          let msg = generateMarkdown(query, topScore);
+          let message = generateMarkdown(query, leastControversial);
+          let combined = '`Top Scoring`' + ` \n${msg} \n ` + '`Least Controversial`' + `\n ${message}`;
 
-          ctx.replyWithHTML(combined, { disable_notification: true });
+          ctx.replyWithMarkdown(combined, { disable_notification: true });
         }
 
         if (sound !== 'undefined') {
@@ -66,7 +69,7 @@ class Dictionary {
 
 
       } else {
-        return ctx.replyWithHTML(`no results for ${query}.`, { disable_notification: true });
+        return ctx.replyWithMarkdown(`no results for ${query}.`, { disable_notification: true });
       }
 
     });
@@ -77,12 +80,13 @@ class Dictionary {
 
 }
 
-function generateHtml(word, data) {
+function generateMarkdown(word, data) {
 
-  let html = `<strong> ${word} </strong>\n ${data.definition}\n <i>Example</i>
-  <pre>${data.example}</pre>`
+  let markdown = `*${word}*\n ${data.definition}\n _Example_` +
+    '```' + `${data.example}` + '```\n' + `${data.thumbs_up} 👍 | ${data.thumbs_down} 👎
+  `;
 
-  return html;
+  return markdown;
 }
 
 function cleanResults(dirtyObj) {
@@ -90,10 +94,10 @@ function cleanResults(dirtyObj) {
   let filtered = dirtyObj.map(function(entry) {
 
     let obj = {};
-    obj['definition'] = entry.definition;
+    obj['definition'] = entry.definition.replace(`\'`, ``);
     obj['thumbs_up'] = entry.thumbs_up;
     obj['thumbs_down'] = entry.thumbs_down;
-    obj['example'] = entry.example;
+    obj['example'] = entry.example.replace(`\'`, ``);
 
     obj['score'] = entry.thumbs_up / entry.thumbs_down;
 
