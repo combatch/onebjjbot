@@ -39,7 +39,7 @@ class Dictionary {
 
     request(options, function(error, response, body) {
       if (error) { console.log('debug', error) };
-      let sound;
+      let sound = '';
 
       let data = JSON.parse(body);
 
@@ -47,7 +47,6 @@ class Dictionary {
 
         let results = cleanResults(data.list);
 
-        sound = _.sample(data.sounds);
         topScore = highestScoring(results);
         leastControversial = getleastControversial(results);
 
@@ -63,7 +62,8 @@ class Dictionary {
           ctx.replyWithMarkdown(combined, { disable_notification: true });
         }
 
-        if (sound !== 'undefined') {
+        if (!_.isEmpty(data.sounds)) {
+          sound = _.sample(data.sounds)
           return ctx.replyWithAudio({ url: sound, filename: `${query}.mp3` }, { disable_notification: true });
         };
 
@@ -94,10 +94,10 @@ function cleanResults(dirtyObj) {
   let filtered = dirtyObj.map(function(entry) {
 
     let obj = {};
-    obj['definition'] = entry.definition.replace(`\'`, ``);
+    obj['definition'] = entry.definition.replace(`*`, ``);
     obj['thumbs_up'] = entry.thumbs_up;
     obj['thumbs_down'] = entry.thumbs_down;
-    obj['example'] = entry.example.replace(`\'`, ``);
+    obj['example'] = entry.example.replace(`*`, ``);
 
     obj['score'] = entry.thumbs_up / entry.thumbs_down;
 
