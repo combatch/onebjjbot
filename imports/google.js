@@ -131,16 +131,20 @@ class Google {
         let filtered = filterImageResults(data);
 
         if (filtered.length) {
-          let random = _.sample(filtered);
-          winston.log('info', 'query : ', query, random);
+          let first = filtered[0];
+          winston.log('info', 'query : ', query, first);
+
+          // let random = _.sample(filtered);
+          // winston.log('info', 'query : ', query, random);
+
           ctx.replyWithChatAction('upload_photo');
 
           // saving / uploading from server b/c it should be faster
-          request(random)
-            .pipe(fs.createWriteStream(`${tmp}/${query}${random['extension']}`))
+          request(first)
+            .pipe(fs.createWriteStream(`${tmp}/${query}${first['extension']}`))
             .on("finish", function(data, err) {
-              var gif = fs.createReadStream(`${tmp}/${query}${random['extension']}`);
-              return ctx.replyWithPhoto({ url: random['url'], filename: `${query}${random['extension']}` }, { disable_notification: true });
+              var gif = fs.createReadStream(`${tmp}/${query}${first['extension']}`);
+              return ctx.replyWithPhoto({ url: first['url'], filename: `${query}${first['extension']}` }, { disable_notification: true });
             })
 
         } else {
