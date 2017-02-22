@@ -3,7 +3,7 @@
 ## Bringing Upvotes to Telegram
 
 
-![header](https://cloud.githubusercontent.com/assets/5941389/22005157/f0e793be-dc15-11e6-8ea8-292dbf54f2e3.png)
+![header](https://cloud.githubusercontent.com/assets/5941389/23197671/c7905320-f876-11e6-852d-64645180704d.png)
 
 ## Social Features!
 
@@ -15,21 +15,29 @@
 
 
 ### Media
+
+![img](https://cloud.githubusercontent.com/assets/5941389/23198376/fa660fce-f87b-11e6-813e-1050ba6ad8fb.gif)
+
  `img <query>`
-  returns a google image search based on query
+  returns a google image search based on query.
+
+![gif](https://cloud.githubusercontent.com/assets/5941389/23198380/0580b080-f87c-11e6-8c14-4dba81300898.gif)
+
 
   `gif <query>`
-  returns a google gif search based on query
+  returns a google gif search based on query.
 
   `youtube <query>`
-  returns a youtube link based on query
+  returns a youtube link based on query.
 
-  `gif <query>`
-  returns a google gif search based on query
+  `giphy <query>`
+  returns a .mp4 file based on query (faster but less reliable results).
 
 ### Bitcoin
   `/balance <address>`
   returns the balance of a bitcoin address in satoshis and BTC.
+
+![coinbase](https://cloud.githubusercontent.com/assets/5941389/23198424/4ed9b52e-f87c-11e6-846f-efe66153472c.gif)
 
   `/coinbase`
   returns live exchange rate for USD/BTC via Coinbase
@@ -45,13 +53,22 @@
   `/register`
   Saves the user's name and group id in order to use social features.
 
+![leaderboard](https://cloud.githubusercontent.com/assets/5941389/23198418/477b35f0-f87c-11e6-9ea8-dbebd8fcfde8.gif)
+
+
   `/leaderboard`
   Prints the users with the highest points in Descending order
+
+![upvote](https://cloud.githubusercontent.com/assets/5941389/23198385/0eb63954-f87c-11e6-8f30-82b4ddee9d73.gif)
+
 
   `upvote, lol(regex), lmao(regex), haha`
   replying to a message with these will trigger the upvote buttons.
 
 ### Etc
+
+![translate](https://cloud.githubusercontent.com/assets/5941389/23198432/589efd1c-f87c-11e6-8340-a447a10abc86.gif)
+
 
   `reply to message with 'translate <foreign language>'`
   translates the original message from <foreign language> to English.
