@@ -78,6 +78,10 @@ bot.hears(/\/ud (.+)/i, (ctx) => {
   return dictionary.urbanDictionary(ctx);
 });
 
+bot.hears(/\/define (.+)/i, (ctx) => {
+  return dictionary.pearsonDictionary(ctx);
+});
+
 
 bot.hears(/translate (.+)/i, (ctx) => {
 
