@@ -23,6 +23,53 @@ class Dictionary {
    * runs Dictionary
    * @param {object} ctx - telegraf context object.
    */
+  pearsonDictionary(ctx) {
+
+    let query = ctx.match[1];
+    let replyTo = ctx.update.message.message_id;
+    let message;
+
+    let options = {
+      method: 'GET',
+      url: `http://api.pearson.com/v2/dictionaries/entries?headword=${query}`,
+      headers: { 'cache-control': 'no-cache' }
+    };
+
+    request(options, function(error, response, body) {
+      if (error) { console.log('debug', error) };
+
+      let data = JSON.parse(body);
+
+      winston.log('debug', 'data', data);
+
+      if (data.results != '') {
+
+        let firstResult = _.head(data.results);
+        let lastResult = _.last(data.results);
+        let firstDefinition = _.head(firstResult.senses);
+        let lastDefinition = _.head(lastResult.senses);
+
+        if (firstResult === lastResult) {
+          message = `<strong>${firstResult.headword} </strong> | <i>${firstResult.part_of_speech}</i> \n<pre>${firstDefinition.definition}</pre>`;
+        }
+        else{
+          message = `<strong>${firstResult.headword} </strong> | <i>${firstResult.part_of_speech}</i> \n<pre>${firstDefinition.definition}</pre>\n\n<strong>${lastResult.headword} </strong> | <i>${lastResult.part_of_speech}</i> \n<pre>${lastDefinition.definition}</pre>`;
+        }
+
+        return ctx.replyWithHTML(`${message}`, { disable_notification: true });
+      } else {
+        return ctx.replyWithMarkdown(`no results for ${query}.`, { disable_notification: true });
+      }
+
+    });
+
+
+  }
+
+  /**
+   * runs Dictionary
+   * @param {object} ctx - telegraf context object.
+   */
   urbanDictionary(ctx) {
 
 
