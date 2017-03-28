@@ -169,7 +169,9 @@ bot.on('message', (ctx) => {
 
   if (ctx.message.reply_to_message) {
 
-    if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == '😂') {
+    // if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == 'savage' || ctx.message.text == '😂') {
+
+    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'savage' || ctx.message.text == '😂') {
 
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;

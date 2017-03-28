@@ -21,7 +21,8 @@ class Google {
    * description would be here.
    */
   constructor() {
-
+    //  https://www.googleapis.com/customsearch/v1?q=cats&cx=008137582627970372877%3A6iaduwmf0xs&imgSize=large&imgType=photo&safe=off&searchType=image&key={YOUR_API_KEY}
+    //
   }
 
 
@@ -132,15 +133,17 @@ class Google {
 
         if (filtered.length) {
           let first = filtered[0];
+
           winston.log('info', 'query : ', query, first);
-
-          // let random = _.sample(filtered);
-          // winston.log('info', 'query : ', query, random);
-
           ctx.replyWithChatAction('upload_photo');
 
-          // saving / uploading from server b/c it should be faster
+
           request(first)
+            .on("error", function(err) {
+              winston.log('error', ` in img search error, ${query}`);
+              ctx.reply(`error with query  '${query}', bad link? - ${first['url']} \ntrying the next result`, { reply_to_message_id: replyTo });
+              return ctx.replyWithPhoto({ url: filtered[1]['url'], filename: `${query}.gif` }, { disable_notification: true });
+            })
             .pipe(fs.createWriteStream(`${tmp}/${query}${first['extension']}`))
             .on("finish", function(data, err) {
               var gif = fs.createReadStream(`${tmp}/${query}${first['extension']}`);
@@ -307,7 +310,24 @@ function isInArray(value, array) {
 }
 
 
+function validImageCheck(urlsObj) {
 
+  let result = urlsObj.map(function(each) {
+
+    let obj = {};
+    return request(each, function(error, response, body) {
+      if (!error && response.statusCode === 200) {
+
+        winston.log('debug', 'each is', each);
+        return true;
+      }
+
+    });
+
+  });
+
+
+}
 
 
 function languageToCode(text) {
