@@ -66,8 +66,24 @@ bot.hears(/\youtube (.+)/i, (ctx) => {
   return google.searchYoutube(ctx);
 });
 
+// bot.hears(/\img (.+)/i, (ctx) => {
+//   return google.imgSearch(ctx);
+// });
+
 bot.hears(/\img (.+)/i, (ctx) => {
-  return google.imgSearch(ctx);
+
+  let p = Promise.resolve(google.createJson(ctx));
+  p.then((query) => {
+    if (query) {
+      winston.log('debug', 'query is ', query);
+      // return google.readJson(query);
+
+      return ctx.reply('something happened ' + query);
+    } else {
+      return ctx.reply('asdf');
+    }
+  });
+
 });
 
 bot.hears(/giphy (.+)/i, (ctx) => {

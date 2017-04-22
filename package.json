@@ -4,7 +4,7 @@
   "description": "telegram bot written in node.js for one jiu jitsu. async/await",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js --exec babel-node --presets es2015,stage-0",
+    "dev": "nodemon index.js --ignore tmp/ --exec babel-node --presets es2015,stage-0 ",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel index.js -o app.js",
     "prod": "cross-env NODE_ENV=production pm2 start onebjjbot.js"
@@ -37,6 +37,7 @@
     "fs-extra": "^1.0.0",
     "graphql": "^0.8.2",
     "jimp": "^0.2.27",
+    "jsonfile": "^2.4.0",
     "knex": "^0.12.6",
     "lodash": "^4.17.2",
     "node-horseman": "^3.2.0",
