@@ -10,9 +10,11 @@ import Google from './imports/google';
 import Bitcoin from './imports/bitcoin';
 import Files from './imports/fileStreams';
 import Dictionary from './imports/dictionary';
+import path from 'path';
 import _ from 'lodash';
 
 let env = process.env.NODE_ENV || 'development';
+let tmp = path.resolve('tmp');
 
 const Telegraf = require('telegraf');
 const { Extra, Markup } = Telegraf;
@@ -72,15 +74,21 @@ bot.hears(/\youtube (.+)/i, (ctx) => {
 
 bot.hears(/\img (.+)/i, (ctx) => {
 
-  let p = Promise.resolve(google.createJson(ctx));
-  p.then((query) => {
-    if (query) {
-      winston.log('debug', 'query is ', query);
-      // return google.readJson(query);
+  let query = ctx.match[1].replace(/[?=]/g, " ");
+  let file = `${tmp}/${query}.json`;
+  let p = Promise.resolve(google.readJson(file));
 
-      return ctx.reply('something happened ' + query);
+  // maybe move the if file exists check to outside of the promise?
+
+  p.then((json) => {
+
+
+    if (json) {
+      winston.log('debug', 'json is ', json);
+
+
     } else {
-      return ctx.reply('asdf');
+      return google.createJson(ctx);
     }
   });
 

@@ -261,14 +261,33 @@ class Google {
       let data = JSON.parse(body);
       let file = `${tmp}/${query}.json`;
 
-      return jsonfile.writeFile(file, data, function(err) {
+      jsonfile.writeFileSync(file, data, function(err) {
         winston.log('debug', 'file written');
-        return true;
+        return query;
       });
 
 
 
     });
+
+  }
+
+  readJson(file) {
+
+    var p = new Promise(function(resolve, reject) {
+      return jsonfile.readFile(file, function(err, obj) {
+        //winston.log('debug', 'file', obj);
+        resolve(obj);
+      });
+      // if (!true) {
+      //   resolve('valuezzzz'); // fulfilled successfully
+      // } else {
+      //   reject('/* reason */ '); // error, rejected
+      // }
+    });
+
+    return p;
+
 
   }
 
