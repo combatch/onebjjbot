@@ -5,6 +5,9 @@ import _ from 'lodash';
 import request from 'request';
 import fs from 'fs';
 import YouTube from 'youtube-node';
+import jsonfile from 'jsonfile';
+
+
 
 let tmp = path.resolve('tmp');
 let youTube = new YouTube();
@@ -125,10 +128,14 @@ class Google {
 
       let data = JSON.parse(body);
 
+
+      winston.log('debug', 'in the 2nd promise');
       if (data.searchInformation.totalResults == 0) {
         return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
       } else {
 
+
+        winston.log('debug', 'in the 3rdd promise');
         let filtered = filterImageResults(data);
 
         if (filtered.length) {
@@ -156,10 +163,16 @@ class Google {
 
       }
 
+
+
+
+
+
     });
 
 
   }
+
 
   tenorSearch(ctx) {
 
@@ -234,7 +247,59 @@ class Google {
     });
   }
 
+  createJson(ctx) {
+
+    let query = ctx.match[1].replace(/[?=]/g, " ");
+    let replyTo = ctx.update.message.message_id;
+
+    request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&imgType=photo&num=5&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
+      if (error) {
+        console.log('debug', error)
+        return false;
+      }
+
+      let data = JSON.parse(body);
+      let file = `${tmp}/${query}.json`;
+
+      jsonfile.writeFileSync(file, data, function(err) {
+        winston.log('debug', 'file written');
+        return query;
+      });
+
+
+
+    });
+
+  }
+
+  readJson(file) {
+
+    var p = new Promise(function(resolve, reject) {
+      return jsonfile.readFile(file, function(err, obj) {
+        //winston.log('debug', 'file', obj);
+        resolve(obj);
+      });
+      // if (!true) {
+      //   resolve('valuezzzz'); // fulfilled successfully
+      // } else {
+      //   reject('/* reason */ '); // error, rejected
+      // }
+    });
+
+    return p;
+
+
+  }
+
+
 }
+
+
+function asdf(file, data) {
+
+
+}
+
 
 function filterYoutubeResults(data) {
 

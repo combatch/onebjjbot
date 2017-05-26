@@ -8,11 +8,14 @@ import Users from './imports/users';
 import Vote from './imports/vote';
 import Google from './imports/google';
 import Bitcoin from './imports/bitcoin';
+import Sounds from './imports/sounds';
 import Files from './imports/fileStreams';
 import Dictionary from './imports/dictionary';
+import path from 'path';
 import _ from 'lodash';
 
 let env = process.env.NODE_ENV || 'development';
+let tmp = path.resolve('tmp');
 
 const Telegraf = require('telegraf');
 const { Extra, Markup } = Telegraf;
@@ -24,11 +27,12 @@ const user = new Users();
 const vote = new Vote();
 const google = new Google();
 const bitcoin = new Bitcoin();
+const sounds = new Sounds();
 const file = new Files();
 const dictionary = new Dictionary();
 
 
-migrations.migrateLatest();
+// migrations.migrateLatest();
 
 
 // middlewares
@@ -50,6 +54,10 @@ bot.command('coinbase', (ctx) => {
   return bitcoin.getCoinbaseExchangeRate(ctx);
 });
 
+bot.command('sounds', (ctx) => {
+  return sounds.returnMenu(ctx);
+});
+
 
 bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, (ctx) => {
   return bitcoin.convertToBitcoin(ctx);
@@ -66,8 +74,55 @@ bot.hears(/\youtube (.+)/i, (ctx) => {
   return google.searchYoutube(ctx);
 });
 
+bot.hears(/snd (.+)/i, (ctx) => {
+  return sounds.getSoundy(ctx);
+});
+
+bot.hears(/oss/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1121);
+});
+bot.hears(/crickets/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1122);
+});
+bot.hears(/bomb/, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1123);
+});
+bot.hears(/airhorn/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1124);
+});
+
+bot.hears(/shie+t/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1125);
+});
+bot.hears(/caralho/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1126);
+});
+
+
+// bot.hears(/\img (.+)/i, (ctx) => {
+//   return google.imgSearch(ctx);
+// });
+
 bot.hears(/\img (.+)/i, (ctx) => {
-  return google.imgSearch(ctx);
+
+  let query = ctx.match[1].replace(/[?=]/g, " ");
+  let file = `${tmp}/${query}.json`;
+  let p = Promise.resolve(google.readJson(file));
+
+  // maybe move the if file exists check to outside of the promise?
+
+  p.then((json) => {
+
+
+    if (json) {
+      winston.log('debug', 'json is ', json);
+
+
+    } else {
+      return google.createJson(ctx);
+    }
+  });
+
 });
 
 bot.hears(/giphy (.+)/i, (ctx) => {
@@ -156,10 +211,13 @@ bot.command('leaderboard', (ctx) => {
 bot.on('message', (ctx) => {
 
 
+  let savage = "savage";
+  let savageRegEx = new RegExp(savage, "ig");
   let lul = "lul";
   let lulRegEx = new RegExp(lul, "ig");
-  let lol = "l+o+l.*";
-  let lolRegEx = new RegExp(lol, "ig");
+  let lol = "l+o+l";
+  let lolRegEx = new RegExp(lol, "i")
+  //let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
   let upvoteRegEx = new RegExp(upvote, "ig");
   let lmao = "l+m+a+o+";
@@ -171,7 +229,7 @@ bot.on('message', (ctx) => {
 
     // if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == 'savage' || ctx.message.text == '😂') {
 
-    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'savage' || ctx.message.text == '😂') {
+    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || savageRegEx.test(ctx.message.text) || ctx.message.text == '😂') {
 
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
