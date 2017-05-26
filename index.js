@@ -180,10 +180,13 @@ bot.command('leaderboard', (ctx) => {
 bot.on('message', (ctx) => {
 
 
+  let savage = "savage";
+  let savageRegEx = new RegExp(savage, "ig");
   let lul = "lul";
   let lulRegEx = new RegExp(lul, "ig");
-  let lol = "l+o+l.*";
-  let lolRegEx = new RegExp(lol, "ig");
+  let lol = "l+o+l";
+  let lolRegEx = new RegExp(lol, "i")
+  //let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
   let upvoteRegEx = new RegExp(upvote, "ig");
   let lmao = "l+m+a+o+";
@@ -195,7 +198,7 @@ bot.on('message', (ctx) => {
 
     // if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == 'savage' || ctx.message.text == '😂') {
 
-    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || ctx.message.text == 'savage' || ctx.message.text == '😂') {
+    if (lolRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) || savageRegEx.test(ctx.message.text) || ctx.message.text == '😂') {
 
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
