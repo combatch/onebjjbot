@@ -99,31 +99,31 @@ bot.hears(/caralho/i, (ctx) => {
 });
 
 
-// bot.hears(/\img (.+)/i, (ctx) => {
-//   return google.imgSearch(ctx);
-// });
-
 bot.hears(/\img (.+)/i, (ctx) => {
-
-  let query = ctx.match[1].replace(/[?=]/g, " ");
-  let file = `${tmp}/${query}.json`;
-  let p = Promise.resolve(google.readJson(file));
-
-  // maybe move the if file exists check to outside of the promise?
-
-  p.then((json) => {
-
-
-    if (json) {
-      winston.log('debug', 'json is ', json);
-
-
-    } else {
-      return google.createJson(ctx);
-    }
-  });
-
+  return google.imgSearch(ctx);
 });
+
+// bot.hears(/\img (.+)/i, (ctx) => {
+
+//   let query = ctx.match[1].replace(/[?=]/g, " ");
+//   let file = `${tmp}/${query}.json`;
+//   let p = Promise.resolve(google.readJson(file));
+
+//   // maybe move the if file exists check to outside of the promise?
+
+//   p.then((json) => {
+
+
+//     if (json) {
+//       winston.log('debug', 'json is ', json);
+
+
+//     } else {
+//       return google.createJson(ctx);
+//     }
+//   });
+
+// });
 
 bot.hears(/giphy (.+)/i, (ctx) => {
   return google.tenorSearch(ctx);
