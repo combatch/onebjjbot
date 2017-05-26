@@ -8,6 +8,7 @@ import Users from './imports/users';
 import Vote from './imports/vote';
 import Google from './imports/google';
 import Bitcoin from './imports/bitcoin';
+import Sounds from './imports/sounds';
 import Files from './imports/fileStreams';
 import Dictionary from './imports/dictionary';
 import path from 'path';
@@ -26,11 +27,12 @@ const user = new Users();
 const vote = new Vote();
 const google = new Google();
 const bitcoin = new Bitcoin();
+const sounds = new Sounds();
 const file = new Files();
 const dictionary = new Dictionary();
 
 
-migrations.migrateLatest();
+// migrations.migrateLatest();
 
 
 // middlewares
@@ -52,6 +54,10 @@ bot.command('coinbase', (ctx) => {
   return bitcoin.getCoinbaseExchangeRate(ctx);
 });
 
+bot.command('sounds', (ctx) => {
+  return sounds.returnMenu(ctx);
+});
+
 
 bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, (ctx) => {
   return bitcoin.convertToBitcoin(ctx);
@@ -67,6 +73,31 @@ bot.hears(/\gif (.+)/i, (ctx) => {
 bot.hears(/\youtube (.+)/i, (ctx) => {
   return google.searchYoutube(ctx);
 });
+
+bot.hears(/snd (.+)/i, (ctx) => {
+  return sounds.getSoundy(ctx);
+});
+
+bot.hears(/oss/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1121);
+});
+bot.hears(/crickets/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1122);
+});
+bot.hears(/bomb/, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1123);
+});
+bot.hears(/airhorn/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1124);
+});
+
+bot.hears(/shie+t/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1125);
+});
+bot.hears(/caralho/i, (ctx) => {
+  return sounds.getIndividualSound(ctx, 1126);
+});
+
 
 // bot.hears(/\img (.+)/i, (ctx) => {
 //   return google.imgSearch(ctx);
