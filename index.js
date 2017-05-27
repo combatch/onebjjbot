@@ -46,6 +46,13 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
+bot.hears(/\/ticker/, (ctx) => {
+  return bitcoin.getLiveTicker(ctx);
+});
+bot.hears(/\/stop/, (ctx) => {
+  return bitcoin.stopLiveTicker(ctx);
+});
+
 bot.hears(/\/balance ([13][a-km-zA-HJ-NP-Z0-9]{26,33}$)/, (ctx) => {
   return bitcoin.getBalance(ctx);
 });
@@ -78,7 +85,7 @@ bot.hears(/snd (.+)/i, (ctx) => {
   return sounds.getSoundy(ctx);
 });
 
-bot.hears(/[oss]{3}/i, (ctx) => {
+bot.hears(/(?:^|\W)oss(?:$|\W)/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1121);
 });
 bot.hears(/crickets/i, (ctx) => {
@@ -214,7 +221,7 @@ bot.on('message', (ctx) => {
   let lulRegEx = new RegExp(lul, "ig");
   let lol = "l+o+l";
   let lolRegEx = new RegExp(lol, "i")
-  //let lolRegEx = new RegExp(lol, "ig");
+    //let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
   let upvoteRegEx = new RegExp(upvote, "ig");
   let lmao = "l+m+a+o+";
