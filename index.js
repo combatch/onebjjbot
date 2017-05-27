@@ -78,14 +78,11 @@ bot.hears(/snd (.+)/i, (ctx) => {
   return sounds.getSoundy(ctx);
 });
 
-bot.hears(/oss/i, (ctx) => {
+bot.hears(/[oss]{3}/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1121);
 });
 bot.hears(/crickets/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1122);
-});
-bot.hears(/bomb/, (ctx) => {
-  return sounds.getIndividualSound(ctx, 1123);
 });
 bot.hears(/airhorn/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1124);
