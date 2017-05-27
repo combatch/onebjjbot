@@ -39,7 +39,6 @@ class Sounds {
 
       let data = JSON.parse(body);
 
-        winston.log('debug', 'data', data);
 
       if (data != '') {
 
@@ -54,7 +53,8 @@ class Sounds {
           .pipe(fs.createWriteStream(`${tmp}/${query}.mp3`))
           .on("finish", function(data, err) {
             var mp3 = fs.createReadStream(`${tmp}/${query}.mp3`);
-            return ctx.replyWithAudio({ source: mp3 }, { title: name, disable_notification: true });
+            return ctx.replyWithAudio({ source: mp3 }, { title: name,
+              performer: 'MiyaoBot',disable_notification: true });
 
           })
 
@@ -68,7 +68,8 @@ class Sounds {
   }
 
 
-  getIndividualSound(ctx, id){
+  getIndividualSound(ctx, id) {
+
 
     let options = {
       method: 'GET',
@@ -93,7 +94,12 @@ class Sounds {
           .pipe(fs.createWriteStream(`${tmp}/${id}.mp3`))
           .on("finish", function(data, err) {
             var mp3 = fs.createReadStream(`${tmp}/${id}.mp3`);
-            return ctx.replyWithAudio({ source: mp3 }, { title: name, disable_notification: true });
+            return ctx.replyWithAudio({ source: mp3 }, {
+              title: name,
+              performer: 'MiyaoBot',
+              caption: '',
+              disable_notification: true
+            });
 
           })
 
@@ -106,7 +112,7 @@ class Sounds {
 
   }
 
-  returnMenu(ctx){
+  returnMenu(ctx) {
 
     return ctx.replyWithHTML('<strong>Usage</strong>: snd (query) to search for sounds.\n or choose from the following \n/oss \n/shieeeeeeeeet \n/airhorn \n/caralho \nYou can upload your own here and it will appear when you search the name \nhttps://www.soundy.top/sounds/new', { disable_web_page_preview: true, disable_notification: true });
 
