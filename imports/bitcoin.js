@@ -57,6 +57,53 @@ class Bitcoin {
 
   }
 
+  getLiveTicker(ctx) {
+
+
+    let group = ctx.chat.id;
+    let messageId = ctx.update.message.message_id;
+
+
+
+    let p = Promise.resolve(this.getCoinbaseExchangeRate(ctx));
+    p.then((exists) => {
+      if (exists) {
+        winston.log('debug', exists);
+
+        ctx.replyWithHTML(`<strong> ${exists}</strong>`);
+      } else {
+
+        winston.log('debug', exists);
+        ctx.replyWithHTML(`<strong>doesnt exist</strong>`);
+      }
+    })
+    .then(() => {
+        ctx.replyWithHTML(`<strong> in promise</strong>`);
+
+    })
+    ;
+
+    //this.startUpdates(ctx);
+
+
+  }
+
+  stopLiveTicker(ctx) {
+    return stopUpdates();
+
+  }
+
+
+
+
+  startUpdates(ctx){
+    setInterval(function() {
+
+
+    }, 2000);
+
+  }
+
   getCoinbaseExchangeRate(ctx) {
 
     let options = {
@@ -90,6 +137,7 @@ class Bitcoin {
     return ss.createScreenshot(ctx, 'http://bitcoinity.org/markets', caption);
 
   }
+
 
   convertToBitcoin(ctx) {
 

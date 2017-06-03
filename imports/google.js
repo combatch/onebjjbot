@@ -122,20 +122,18 @@ class Google {
 
     request('https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + conf.apis.CX + '&imgSize=large&imgType=photo&num=5&safe=off&searchType=image&key=' + conf.apis.IMAGE, function(error, response, body) {
       if (error) {
-        console.log('debug', error)
+        console.log('error', error)
         return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
       }
 
       let data = JSON.parse(body);
 
 
-      winston.log('debug', 'in the 2nd promise');
       if (data.searchInformation.totalResults == 0) {
         return ctx.reply(`no results found for ${query}`, { reply_to_message_id: replyTo });
       } else {
 
 
-        winston.log('debug', 'in the 3rdd promise');
         let filtered = filterImageResults(data);
 
         if (filtered.length) {
