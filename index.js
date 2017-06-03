@@ -8,6 +8,7 @@ import Users from './imports/users';
 import Vote from './imports/vote';
 import Google from './imports/google';
 import Bitcoin from './imports/bitcoin';
+import Crypto from './imports/crypto';
 import Sounds from './imports/sounds';
 import Files from './imports/fileStreams';
 import Dictionary from './imports/dictionary';
@@ -27,6 +28,7 @@ const user = new Users();
 const vote = new Vote();
 const google = new Google();
 const bitcoin = new Bitcoin();
+const crypto = new Crypto();
 const sounds = new Sounds();
 const file = new Files();
 const dictionary = new Dictionary();
@@ -45,6 +47,10 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
+
+bot.hears(/\/volume/, (ctx) => {
+  return crypto.getTopVolume(ctx);
+});
 
 bot.hears(/\/ticker/, (ctx) => {
   return bitcoin.getLiveTicker(ctx);
@@ -219,7 +225,8 @@ bot.on('message', (ctx) => {
   let savageRegEx = new RegExp(savage, "ig");
   let lul = "lul";
   let lulRegEx = new RegExp(lul, "ig");
-  let lol = "l+o+l";
+  //let lol = "l+o+l";
+  let lol = "(?:^|\W)lol(?:$|\W)";
   let lolRegEx = new RegExp(lol, "i")
     //let lolRegEx = new RegExp(lol, "ig");
   let upvote = "upvote";
