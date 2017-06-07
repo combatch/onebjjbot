@@ -41,6 +41,7 @@ const dictionary = new Dictionary();
 bot.use(Telegraf.memorySession());
 
 bot.telegram.getMe().then((botInfo) => {
+  bot.options.id = botInfo.id;
   bot.options.username = botInfo.username;
 })
 
@@ -246,25 +247,32 @@ bot.on('message', (ctx) => {
       let replyTo = ctx.message.reply_to_message.from.id;
       let originalMessageId = ctx.message.reply_to_message.message_id;
 
-      if (userId == replyTo) {
-        return ctx.reply('cant vote for yourself');
+      if (replyTo !== bot.options.id) {
+
+        if (userId == replyTo) {
+          return ctx.reply('cant vote for yourself');
+        }
+
+        return ctx.reply('<i>choose a button to upvote</i>', Extra
+          .inReplyTo(originalMessageId)
+          .notifications(false)
+          .HTML()
+          .markup(
+            Markup.inlineKeyboard([
+              Markup.callbackButton('😂', 'tearsofjoy'),
+              Markup.callbackButton('👍', 'thumbsup'),
+              Markup.callbackButton('❤', 'heart'),
+              Markup.callbackButton('🔥', 'fire'),
+              // Markup.callbackButton('👏', 'clap'),
+              Markup.callbackButton('💯', 'hundred')
+            ])))
+
       }
 
-      return ctx.reply('<i>choose a button to upvote</i>', Extra
-        .inReplyTo(originalMessageId)
-        .notifications(false)
-        .HTML()
-        .markup(
-          Markup.inlineKeyboard([
-            Markup.callbackButton('😂', 'tearsofjoy'),
-            Markup.callbackButton('👍', 'thumbsup'),
-            Markup.callbackButton('❤', 'heart'),
-            Markup.callbackButton('🔥', 'fire'),
-            // Markup.callbackButton('👏', 'clap'),
-            Markup.callbackButton('💯', 'hundred')
-          ])))
 
     }
+
+
   }
 });
 
