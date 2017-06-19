@@ -48,9 +48,8 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
-
 bot.hears(/\/volume/, (ctx) => {
-  return crypto.getTopVolume(ctx);
+  return crypto.getCoinCapVolume(ctx);
 });
 
 bot.hears(/\/ticker/, (ctx) => {
