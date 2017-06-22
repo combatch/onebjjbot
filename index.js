@@ -48,6 +48,14 @@ bot.telegram.getMe().then((botInfo) => {
 
 
 
+bot.hears(/\/winners/, (ctx) => {
+  return crypto.getBiggestWinners(ctx);
+});
+
+bot.hears(/\/losers/, (ctx) => {
+  return crypto.getBiggestLosers(ctx);
+});
+
 bot.hears(/\/volume/, (ctx) => {
   return crypto.getCoinCapVolume(ctx);
 });

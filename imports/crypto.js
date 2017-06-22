@@ -100,13 +100,115 @@ class Crypto {
           symbol: "$",
           decimal: ".",
           thousand: ",",
-          precision: 0,
+          precision: 2,
           format: "%s%v"
         });
         let change = each["cap24hrChange"];
         if (change.indexOf("-")) {
           change = `+${change}`;
         }
+        let pairing = each["price"] / btc;
+        pairing = _.ceil(pairing, 5);
+
+        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 BTC = ${pairing} ${Ticker}\n\n`;
+      });
+
+      return ctx.replyWithHTML(string, {});
+    });
+  }
+
+  getBiggestLosers(ctx) {
+    let options = {
+      method: "GET",
+      url: "http://coincap.io/front",
+      headers: { "cache-control": "no-cache" }
+    };
+
+    request(options, function(error, response, body) {
+      if (error) {
+        winston.log("error", error);
+      }
+      let data = JSON.parse(body);
+
+      let top = _.reject(data, { short: "XRP" });
+      let btc = _.filter(data, { short: "BTC" });
+      btc = btc[0]["price"];
+
+      top = _.sortBy(top, [o => Number(o.cap24hrChange)]);
+      top = top.slice(0, 6);
+      winston.log("debug", top);
+
+      let string = `<b>Biggest Losers over 24 hours</b>\n\n`;
+
+      let map = top.map(function(each) {
+        let Ticker = each["short"];
+        let Coin = each["long"];
+        let volume = currency.format(each["volume"], {
+          symbol: "$",
+          decimal: ".",
+          thousand: ",",
+          precision: 0,
+          format: "%s%v"
+        });
+        let price = currency.format(each["price"], {
+          symbol: "$",
+          decimal: ".",
+          thousand: ",",
+          precision: 2,
+          format: "%s%v"
+        });
+        let change = each["cap24hrChange"];
+        let pairing = each["price"] / btc;
+        pairing = _.ceil(pairing, 5);
+
+        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 BTC = ${pairing} ${Ticker}\n\n`;
+      });
+
+      return ctx.replyWithHTML(string, {});
+    });
+  }
+
+  getBiggestWinners(ctx) {
+    let options = {
+      method: "GET",
+      url: "http://coincap.io/front",
+      headers: { "cache-control": "no-cache" }
+    };
+
+    request(options, function(error, response, body) {
+      if (error) {
+        winston.log("error", error);
+      }
+      let data = JSON.parse(body);
+
+      let top = _.reject(data, { short: "XRP" });
+      let btc = _.filter(data, { short: "BTC" });
+      btc = btc[0]["price"];
+
+      top = _.sortBy(top, [o => Number(o.cap24hrChange)]).reverse();
+      top = top.slice(0, 6);
+      winston.log("debug", top);
+
+      let string = `<b>Biggest Winners over 24 hours</b>\n\n`;
+
+      let map = top.map(function(each) {
+        let Ticker = each["short"];
+        let Coin = each["long"];
+        let volume = currency.format(each["volume"], {
+          symbol: "$",
+          decimal: ".",
+          thousand: ",",
+          precision: 0,
+          format: "%s%v"
+        });
+        let price = currency.format(each["price"], {
+          symbol: "$",
+          decimal: ".",
+          thousand: ",",
+          precision: 2,
+          format: "%s%v"
+        });
+        let change = each["cap24hrChange"];
         let pairing = each["price"] / btc;
         pairing = _.ceil(pairing, 5);
 
