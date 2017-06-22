@@ -136,7 +136,6 @@ class Crypto {
 
       top = _.sortBy(top, [o => Number(o.cap24hrChange)]);
       top = top.slice(0, 6);
-      winston.log("debug", top);
 
       let string = `<b>Biggest Losers over 24 hours</b>\n\n`;
 
@@ -187,7 +186,6 @@ class Crypto {
 
       top = _.sortBy(top, [o => Number(o.cap24hrChange)]).reverse();
       top = top.slice(0, 6);
-      winston.log("debug", top);
 
       let string = `<b>Biggest Winners over 24 hours</b>\n\n`;
 
