@@ -82,7 +82,7 @@ class Crypto {
       top = _.reject(top, { volume: "NaN" });
       top = _.reject(top, { short: "BTC" });
       top = _.sortBy(top, [o => Number(o.volume)]).reverse();
-      top = top.slice(0, 6);
+      top = top.slice(0, 5);
 
       let string = `<b>Top Volume over 24 hours</b>\n${remaining} Bitcoin remain.\n\n`;
 
@@ -129,13 +129,14 @@ class Crypto {
         winston.log("error", error);
       }
       let data = JSON.parse(body);
+      let topSeventyFive = data.slice(0,75);
 
-      let top = _.reject(data, { short: "XRP" });
+      let top = _.reject(topSeventyFive, { short: "XRP", shapeshift : false });
       let btc = _.filter(data, { short: "BTC" });
       btc = btc[0]["price"];
 
       top = _.sortBy(top, [o => Number(o.cap24hrChange)]);
-      top = top.slice(0, 6);
+      top = top.slice(0, 4);
 
       let string = `<b>Biggest Losers over 24 hours</b>\n\n`;
 
@@ -179,13 +180,14 @@ class Crypto {
         winston.log("error", error);
       }
       let data = JSON.parse(body);
+      let topSeventyFive = data.slice(0,75);
 
-      let top = _.reject(data, { short: "XRP" });
+      let top = _.reject(topSeventyFive, { short: "XRP", shapeshift : false });
       let btc = _.filter(data, { short: "BTC" });
       btc = btc[0]["price"];
 
       top = _.sortBy(top, [o => Number(o.cap24hrChange)]).reverse();
-      top = top.slice(0, 6);
+      top = top.slice(0, 4);
 
       let string = `<b>Biggest Winners over 24 hours</b>\n\n`;
 
