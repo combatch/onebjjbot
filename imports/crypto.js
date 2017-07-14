@@ -110,7 +110,7 @@ class Crypto {
         let pairing = each["price"] / btc;
         pairing = _.ceil(pairing, 5);
 
-        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 BTC = ${pairing} ${Ticker}\n\n`;
+        string += `<strong>${Coin}</strong>  24 hr Volume -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 ${Ticker} = ${pairing} BTC\n\n`;
       });
 
       return ctx.replyWithHTML(string, {});
@@ -161,12 +161,29 @@ class Crypto {
         let pairing = each["price"] / btc;
         pairing = _.ceil(pairing, 5);
 
-        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 BTC = ${pairing} ${Ticker}\n\n`;
+        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 ${Ticker} = ${pairing} BTC\n\n`;
       });
 
       return ctx.replyWithHTML(string, {});
     });
   }
+
+  // test(ctx, coin) {
+  //   let options = {
+  //     method: "GET",
+  //     url: `http://coincap.io/history/1day/${coin}`,
+  //     headers: { "cache-control": "no-cache" }
+  //   };
+
+  //   request(options, function(error, response, body) {
+  //     if (error) {
+  //       winston.log("error", error);
+  //     }
+  //     let data = JSON.parse(body);
+  //     winston.log("info", data);
+
+  //   });
+  // }
 
   getBiggestWinners(ctx) {
     let options = {
@@ -212,7 +229,7 @@ class Crypto {
         let pairing = each["price"] / btc;
         pairing = _.ceil(pairing, 5);
 
-        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 BTC = ${pairing} ${Ticker}\n\n`;
+        string += `<strong>${Coin}</strong>  -- ${volume}  \n<i>${change}% </i> \n1 ${Ticker} = ${price}\n1 ${Ticker} = ${pairing} BTC\n\n`;
       });
 
       return ctx.replyWithHTML(string, {});
