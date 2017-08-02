@@ -192,6 +192,8 @@ class Crypto {
       headers: { "cache-control": "no-cache" }
     };
 
+    ctx.replyWithChatAction("typing");
+
     request(options, function(error, response, body) {
       if (error) {
         winston.log("error", error);
@@ -242,11 +244,11 @@ class Crypto {
         format: "%s%v"
       });
 
-      let string = `1 ${bcc[0]["short"]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
+      let string = `1 ${bcc[0][
+        "short"
+      ]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
         "short"
       ]} = <b>${btcPrice}</b>\n<i>${btcChange}%</i>\n${btcremaining} coins left`;
-
-
 
       return ctx.replyWithHTML(string, {});
     });
