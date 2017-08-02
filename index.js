@@ -84,6 +84,10 @@ bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, (ctx) => {
   return bitcoin.convertToBitcoin(ctx);
 });
 bot.hears(/\/btc/i, (ctx) => {
+  return crypto.getBitcoinPrices(ctx);
+});
+
+bot.hears(/\/btcchart/i, (ctx) => {
   return bitcoin.getBitcoinityChart(ctx);
 });
 
