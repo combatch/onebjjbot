@@ -129,9 +129,9 @@ class Crypto {
         winston.log("error", error);
       }
       let data = JSON.parse(body);
-      let topSeventyFive = data.slice(0,75);
+      let topSeventyFive = data.slice(0, 75);
 
-      let top = _.reject(topSeventyFive, { short: "XRP", shapeshift : false });
+      let top = _.reject(topSeventyFive, { short: "XRP", shapeshift: false });
       let btc = _.filter(data, { short: "BTC" });
       btc = btc[0]["price"];
 
@@ -185,6 +185,73 @@ class Crypto {
   //   });
   // }
 
+  getBitcoinPrices(ctx) {
+    let options = {
+      method: "GET",
+      url: "http://coincap.io/front",
+      headers: { "cache-control": "no-cache" }
+    };
+
+    request(options, function(error, response, body) {
+      if (error) {
+        winston.log("error", error);
+      }
+      let data = JSON.parse(body);
+
+      let btc = _.filter(data, { short: "BTC" });
+
+      let btcChange = btc[0]["cap24hrChange"];
+      if (btcChange.indexOf("-")) {
+        btcChange = `+${btcChange}`;
+      }
+      let btcremaining = 21000000 - btc[0]["supply"];
+      btcremaining = currency.format(btcremaining, {
+        decimal: "",
+        thousand: ",",
+        precision: 0,
+        format: "%v"
+      });
+
+      let btcPrice = currency.format(btc[0]["price"], {
+        symbol: "$",
+        decimal: ".",
+        thousand: ",",
+        precision: 2,
+        format: "%s%v"
+      });
+
+      let bcc = _.filter(data, { long: "Bitcoin Cash" });
+
+      let bccChange = bcc[0]["cap24hrChange"];
+      if (bccChange.indexOf("-")) {
+        bccChange = `+${bccChange}`;
+      }
+      let bccremaining = 21000000 - bcc[0]["supply"];
+      bccremaining = currency.format(bccremaining, {
+        decimal: "",
+        thousand: ",",
+        precision: 0,
+        format: "%v"
+      });
+
+      let bccPrice = currency.format(bcc[0]["price"], {
+        symbol: "$",
+        decimal: ".",
+        thousand: ",",
+        precision: 2,
+        format: "%s%v"
+      });
+
+      let string = `1 ${bcc[0]["short"]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
+        "short"
+      ]} = <b>${btcPrice}</b>\n<i>${btcChange}%</i>\n${btcremaining} coins left`;
+
+
+
+      return ctx.replyWithHTML(string, {});
+    });
+  }
+
   getBiggestWinners(ctx) {
     let options = {
       method: "GET",
@@ -197,9 +264,9 @@ class Crypto {
         winston.log("error", error);
       }
       let data = JSON.parse(body);
-      let topSeventyFive = data.slice(0,75);
+      let topSeventyFive = data.slice(0, 75);
 
-      let top = _.reject(topSeventyFive, { short: "XRP", shapeshift : false });
+      let top = _.reject(topSeventyFive, { short: "XRP", shapeshift: false });
       let btc = _.filter(data, { short: "BTC" });
       btc = btc[0]["price"];
 
