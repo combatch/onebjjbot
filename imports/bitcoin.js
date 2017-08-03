@@ -136,7 +136,8 @@ class Bitcoin {
           });
         } else {
           price = data.price;
-          amount = currency.format(data.price, {
+
+          amount = currency.format(amount, {
             symbol: "$",
             decimal: ".",
             thousand: ",",
