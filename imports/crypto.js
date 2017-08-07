@@ -104,9 +104,13 @@ class Crypto {
           format: "%s%v"
         });
         let change = each["cap24hrChange"];
-        if (change.indexOf("-")) {
-          change = `+${change}`;
+
+        if (change < 0) {
+          change = `⬇ ${Math.abs(change)}`;
+        } else {
+          change = `⬆ ${Math.abs(change)}`;
         }
+
         let pairing = each["price"] / btc;
         pairing = _.ceil(pairing, 5);
 
@@ -203,9 +207,13 @@ class Crypto {
       let btc = _.filter(data, { short: "BTC" });
 
       let btcChange = btc[0]["cap24hrChange"];
-      if (btcChange.indexOf("-")) {
-        btcChange = `+${btcChange}`;
+
+      if (btcChange < 0) {
+        btcChange = `⬇ ${Math.abs(btcChange)}`;
+      } else {
+        btcChange = `⬆ ${Math.abs(btcChange)}`;
       }
+
       let btcremaining = 21000000 - btc[0]["supply"];
       btcremaining = currency.format(btcremaining, {
         decimal: "",
@@ -225,9 +233,13 @@ class Crypto {
       let bcc = _.filter(data, { long: "Bitcoin Cash" });
 
       let bccChange = bcc[0]["cap24hrChange"];
-      if (bccChange.indexOf("-")) {
-        bccChange = `+${bccChange}`;
+
+      if (bccChange < 0) {
+        bccChange = `⬇ ${Math.abs(bccChange)}`;
+      } else {
+        bccChange = `⬆ ${Math.abs(bccChange)}`;
       }
+
       let bccremaining = 21000000 - bcc[0]["supply"];
       bccremaining = currency.format(bccremaining, {
         decimal: "",
@@ -351,13 +363,19 @@ class Crypto {
     request(options, function(error, response, body) {
       if (response.statusCode == "200") {
         let data = JSON.parse(body);
-        return ctx.replyWithHTML(`${amount} ${fromCurrency} = ${data.price} ${to}`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `${amount} ${fromCurrency} = ${data.price} ${to}`,
+          {
+            disable_notification: true
+          }
+        );
       } else {
-        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `usage: convert (amount) (currency) to (currency)`,
+          {
+            disable_notification: true
+          }
+        );
       }
     });
   }

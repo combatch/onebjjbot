@@ -87,7 +87,7 @@ bot.hears(/\/btc/i, (ctx) => {
   return crypto.getBitcoinPrices(ctx);
 });
 
-bot.hears(/\/btcchart/i, (ctx) => {
+bot.hears(/\/chart/i, (ctx) => {
   return bitcoin.getBitcoinityChart(ctx);
 });
 
