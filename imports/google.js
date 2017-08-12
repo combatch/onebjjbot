@@ -95,7 +95,9 @@ class Google {
           ctx.replyWithChatAction('upload_video');
 
           // saving / uploading from server b/c it should be faster
-          request(random)
+
+          request
+            .get(random.url, { timeout: 1800 })
             .pipe(fs.createWriteStream(`${tmp}/${query}.gif`))
             .on("finish", function(data, err) {
               var gif = fs.createReadStream(`${tmp}/${query}.gif`);
@@ -143,7 +145,8 @@ class Google {
           ctx.replyWithChatAction('upload_photo');
 
 
-          request(first)
+          request
+            .get(first.url, { timeout: 1800 })
             .on("error", function(err) {
               winston.log('error', ` in img search error, ${query}`);
               ctx.reply(`error with query  '${query}', bad link? - ${first['url']} \ntrying the next result`, { reply_to_message_id: replyTo });
