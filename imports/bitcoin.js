@@ -119,6 +119,11 @@ class Bitcoin {
         fromCurrency = "BCH";
         break;
     }
+    switch (to) {
+      case "BCC":
+        to = "BCH";
+        break;
+    }
 
     let options = {
       method: "GET",
@@ -155,6 +160,12 @@ class Bitcoin {
         switch (fromCurrency) {
           case "BCH":
             fromCurrency = "BCC";
+            break;
+        }
+
+        switch (to) {
+          case "BCH":
+            to = "BCC";
             break;
         }
 
