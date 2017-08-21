@@ -114,6 +114,12 @@ class Bitcoin {
     let fromCurrency = ctx.match[2].replace(/\s+/, "").toUpperCase();
     let to = ctx.match[4].replace(/\s+/, "").toUpperCase();
 
+    switch (fromCurrency) {
+      case "BCC":
+        fromCurrency = "BCH";
+        break;
+    }
+
     let options = {
       method: "GET",
       url: "https://apiv2.bitcoinaverage.com/convert/global",
@@ -126,7 +132,7 @@ class Bitcoin {
         let data = JSON.parse(body);
         let price;
 
-        if (fromCurrency == "BTC") {
+        if (fromCurrency == "BTC" || fromCurrency == "BCH") {
           price = currency.format(data.price, {
             symbol: "$",
             decimal: ".",
@@ -144,6 +150,12 @@ class Bitcoin {
             precision: 2,
             format: "%s%v"
           });
+        }
+
+        switch (fromCurrency) {
+          case "BCH":
+            fromCurrency = "BCC";
+            break;
         }
 
         return ctx.replyWithHTML(`${amount} ${fromCurrency} = ${price} ${to}`, {
