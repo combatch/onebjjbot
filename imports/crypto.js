@@ -190,6 +190,10 @@ class Crypto {
   // }
 
   getBitcoinPrices(ctx) {
+    let userID = ctx.message.from.id;
+    let first_name = ctx.message.from.first_name;
+
+
     let options = {
       method: "GET",
       url: "http://coincap.io/front",
@@ -256,7 +260,7 @@ class Crypto {
         format: "%s%v"
       });
 
-      let string = `1 ${bcc[0][
+      let string = `<a href="tg://user?id=${userID}">${first_name}</a>\n1 ${bcc[0][
         "short"
       ]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
         "short"
@@ -340,11 +344,11 @@ class Crypto {
     });
   }
 
-  getCryptoityChart(ctx) {
+  getBitcoinityChart(ctx) {
     let date = new Date().toString().split(" ").splice(1, 3).join(" ");
     let caption = `btc price as of ${date}`;
 
-    return ss.createScreenshot(ctx, "http://Cryptoity.org/markets", caption);
+    return ss.createScreenshot(ctx, "http://Bitcoinity.org/markets", caption);
   }
 
   convertToCrypto(ctx) {
