@@ -45,6 +45,8 @@ bot.telegram.getMe().then((botInfo) => {
   bot.options.username = botInfo.username;
 })
 
+// to mention username
+//<a href="tg://user?id=${userID}">${first_name}</a>
 
 
 

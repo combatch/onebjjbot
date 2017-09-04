@@ -18,43 +18,6 @@ class Crypto {
    */
   constructor() {}
 
-  getTopVolume(ctx) {
-    poloniex.return24Volume(function(err, ticker) {
-      if (err) {
-        winston.log("error", err);
-      }
-
-      delete ticker.totalBTC;
-      delete ticker.totalETH;
-      delete ticker.totalUSDT;
-      delete ticker.totalXMR;
-      delete ticker.totalXUSD;
-      delete ticker["USDT_BTC"];
-      delete ticker["BTC_XRP"];
-
-      let top = _.filter(ticker, "BTC");
-      top = _.sortBy(top, [o => Number(o.BTC)]).reverse();
-      top = top.slice(0, 5);
-
-      let string = `<b>Top Volume over 24 hours</b>\n\n`;
-
-      let map = top.map(function(each) {
-        let Coin = Object.keys(each);
-        let volume = Object.values(each);
-
-        Coin = Coin[1];
-
-        winston.log("debug", Coin);
-
-        volume = Math.ceil(volume[0]).toLocaleString();
-
-        string += `<i>${Coin}</i>  -- ${volume} BTC \n`;
-      });
-
-      return ctx.replyWithHTML(string, {});
-    });
-  }
-
   getCoinCapVolume(ctx) {
     let options = {
       method: "GET",
@@ -81,6 +44,7 @@ class Crypto {
       let top = _.reject(data, { short: "XRP" });
       top = _.reject(top, { volume: "NaN" });
       top = _.reject(top, { short: "BTC" });
+      top = _.reject(top, { short: "USDT" });
       top = _.sortBy(top, [o => Number(o.volume)]).reverse();
       top = top.slice(0, 5);
 
@@ -190,6 +154,9 @@ class Crypto {
   // }
 
   getBitcoinPrices(ctx) {
+    let userID = ctx.message.from.id;
+    let first_name = ctx.message.from.first_name;
+
     let options = {
       method: "GET",
       url: "http://coincap.io/front",
@@ -256,7 +223,13 @@ class Crypto {
         format: "%s%v"
       });
 
-      let string = `1 ${bcc[0][
+      switch (bcc[0]["short"]) {
+        case "BCH":
+          bcc[0]["short"] = "BCC";
+          break;
+      }
+
+      let string = `\n1 ${bcc[0][
         "short"
       ]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
         "short"
@@ -281,6 +254,7 @@ class Crypto {
       let topSeventyFive = data.slice(0, 75);
 
       let top = _.reject(topSeventyFive, { short: "XRP", shapeshift: false });
+      top = _.reject(top, { short: "USDT" });
       let btc = _.filter(data, { short: "BTC" });
       btc = btc[0]["price"];
 
@@ -340,44 +314,15 @@ class Crypto {
     });
   }
 
-  getCryptoityChart(ctx) {
-    let date = new Date().toString().split(" ").splice(1, 3).join(" ");
+  getBitcoinityChart(ctx) {
+    let date = new Date()
+      .toString()
+      .split(" ")
+      .splice(1, 3)
+      .join(" ");
     let caption = `btc price as of ${date}`;
 
-    return ss.createScreenshot(ctx, "http://Cryptoity.org/markets", caption);
-  }
-
-  convertToCrypto(ctx) {
-    let amount = ctx.match[1].replace(/\s+/, "");
-    amount = Number(amount.replace(/[^0-9\.]+/g, ""));
-    let fromCurrency = ctx.match[2].replace(/\s+/, "").toUpperCase();
-    let to = ctx.match[4].replace(/\s+/, "").toUpperCase();
-
-    let options = {
-      method: "GET",
-      url: "https://apiv2.Cryptoaverage.com/convert/global",
-      qs: { from: fromCurrency, to: to, amount: amount },
-      headers: { "cache-control": "no-cache" }
-    };
-
-    request(options, function(error, response, body) {
-      if (response.statusCode == "200") {
-        let data = JSON.parse(body);
-        return ctx.replyWithHTML(
-          `${amount} ${fromCurrency} = ${data.price} ${to}`,
-          {
-            disable_notification: true
-          }
-        );
-      } else {
-        return ctx.replyWithHTML(
-          `usage: convert (amount) (currency) to (currency)`,
-          {
-            disable_notification: true
-          }
-        );
-      }
-    });
+    return ss.createScreenshot(ctx, "http://Bitcoinity.org/markets", caption);
   }
 }
 
