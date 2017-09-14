@@ -223,6 +223,15 @@ class Crypto {
         format: "%s%v"
       });
 
+      let ratio = btc[0]["price"] / bcc[0]["price"] - 0.0002;
+
+      ratio = currency.format(ratio, {
+        symbol: "",
+        decimal: ".",
+        precision: 4,
+        format: "%v"
+      });
+
       switch (bcc[0]["short"]) {
         case "BCH":
           bcc[0]["short"] = "BCC";
@@ -233,7 +242,7 @@ class Crypto {
         "short"
       ]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
         "short"
-      ]} = <b>${btcPrice}</b>\n<i>${btcChange}%</i>\n${btcremaining} coins left`;
+      ]} = <b>${btcPrice}</b>\n<i>${btcChange}%</i>\n${btcremaining} coins left\n\n 1 BTC gets you ${ratio} BCC`;
 
       return ctx.replyWithHTML(string, {});
     });
