@@ -1,12 +1,12 @@
-import path from "path";
-import winston from "winston";
-import conf from "../config/config.js";
-import _ from "lodash";
-import request from "request";
-import axios from "axios";
-import fs from "fs";
-import YouTube from "youtube-node";
-import jsonfile from "jsonfile";
+let path = require("path");
+let winston = require("winston");
+let conf = require("../config/config.js");
+let _ = require("lodash");
+let request = require("request");
+let axios = require("axios");
+let fs = require("fs");
+let YouTube = require("youtube-node");
+let jsonfile = require("jsonfile");
 const { URL } = require("url");
 
 const Telegraf = require("telegraf");
@@ -718,4 +718,4 @@ function languageToCode(text) {
       break;
   }
 }
-export default Google;
+module.exports = Google;

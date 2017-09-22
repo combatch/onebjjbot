@@ -1,11 +1,11 @@
-import path from "path";
-import winston from "winston";
-import conf from "../config/config.js";
-import _ from "lodash";
-import request from "request";
-import currency from "currency-formatter";
-import fs from "fs";
-import ScreenShots from "../imports/screenshots";
+let path = require("path");
+let winston = require("winston");
+let conf = require("../config/config.js");
+let _ = require("lodash");
+let request = require("request");
+let currency = require("currency-formatter");
+let fs = require("fs");
+let ScreenShots = require("../imports/screenshots");
 const Poloniex = require("poloniex-api-node");
 let poloniex = new Poloniex("conf.apis.poloapikey", "conf.apis.polosecret");
 
@@ -335,4 +335,4 @@ class Crypto {
   }
 }
 
-export default Crypto;
+module.exports = Crypto;

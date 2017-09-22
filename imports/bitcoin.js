@@ -1,11 +1,11 @@
-import path from "path";
-import winston from "winston";
-import conf from "../config/config.js";
-import _ from "lodash";
-import request from "request";
-import fs from "fs";
-import ScreenShots from "../imports/screenshots";
-import currency from "currency-formatter";
+let path = require("path");
+let winston = require("winston");
+let conf = require("../config/config.js");
+let _ = require("lodash");
+let request = require("request");
+let fs = require("fs");
+let ScreenShots = require("../imports/screenshots");
+let currency = require("currency-formatter");
 
 const ss = new ScreenShots();
 
@@ -47,7 +47,6 @@ class Bitcoin {
     });
   }
 
-
   getCoinbaseExchangeRate(ctx) {
     let options = {
       method: "GET",
@@ -72,7 +71,11 @@ class Bitcoin {
   }
 
   getBitcoinityChart(ctx) {
-    let date = new Date().toString().split(" ").splice(1, 3).join(" ");
+    let date = new Date()
+      .toString()
+      .split(" ")
+      .splice(1, 3)
+      .join(" ");
     let caption = `btc price as of ${date}`;
 
     return ss.createScreenshot(ctx, "http://bitcoinity.org/markets", caption);
@@ -143,12 +146,15 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `usage: convert (amount) (currency) to (currency)`,
+          {
+            disable_notification: true
+          }
+        );
       }
     });
   }
 }
 
-export default Bitcoin;
+module.exports = Bitcoin;
