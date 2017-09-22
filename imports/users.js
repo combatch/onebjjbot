@@ -1,30 +1,23 @@
-import fs from 'fs-extra';
-import path from 'path';
-import _ from 'lodash';
-import winston from 'winston';
-import config from '../config/config';
+let fs = require("fs-extra");
+let path = require("path");
+let _ = require("lodash");
+let winston = require("winston");
+let config = require("../config/config");
 
-let env = process.env.NODE_ENV || 'development';
-let knexfile = path.resolve('knexfile.js');
-let knex = require('knex')(require(knexfile)[env]);
+let env = process.env.NODE_ENV || "development";
+let knexfile = path.resolve("knexfile.js");
+let knex = require("knex")(require(knexfile)[env]);
 
-const Telegraf = require('telegraf');
+const Telegraf = require("telegraf");
 const { Extra, Markup } = Telegraf;
-const bot = new Telegraf(config[`${env}`]['token']);
-
-
-
+const bot = new Telegraf(config[`${env}`]["token"]);
 
 /** Class representing Users. */
 class Users {
-
   /**
    * description would be here.
    */
-  constructor() {
-
-  }
-
+  constructor() {}
 
   /**
    * convert old group id to new supergroup one
@@ -32,9 +25,7 @@ class Users {
    * @return {int} the id .
    */
   updateGroupId(oldID, newID) {
-
-
-    return knex('Votes')
+    return knex("Votes")
       .where({
         group_id: oldID
       })
@@ -42,24 +33,19 @@ class Users {
         group_id: newID
       })
       .then(function(rows) {
-
-
-        return knex('Users')
+        return knex("Users")
           .where({
             group_id: oldID
           })
           .update({
             group_id: newID
           })
-          .then(() => {})
-
+          .then(() => {});
       })
       .catch(function(err) {
-        winston.log('error', 'in the catch', err);
+        winston.log("error", "in the catch", err);
         ctx.reply(`${err} `);
       });
-
-
   }
 
   /**
@@ -68,26 +54,21 @@ class Users {
    * @return {int} the id .
    */
   getStickiedMessageId(ctx) {
-
     let group = ctx.chat.id;
 
-    return knex('Votes')
+    return knex("Votes")
       .where({
         group_id: group,
         isStickied: true
       })
-      .first('message_id')
+      .first("message_id")
       .then(function(rows) {
-
         if (!_.isEmpty(rows)) {
-          let messageId = rows['message_id'];
+          let messageId = rows["message_id"];
           return messageId;
         }
-
-      })
+      });
   }
-
-
 
   /**
    * adds user to Users table.
@@ -98,43 +79,42 @@ class Users {
     let chatType, telegram_id, group_id, message_id, User;
 
     if (auto) {
-
       chatType = ctx.update.callback_query.reply_to_message.chat.type;
       telegram_id = ctx.update.callback_query.reply_to_message.from.id;
-      group_id = ctx.update.callback_query.reply_to_message.chat.type != 'private' ? ctx.update.callback_query.reply_to_message.chat.id : '';
-      message_id = ctx.update.callback_query.reply_to_message.reply_to_message.message_id;
+      group_id =
+        ctx.update.callback_query.reply_to_message.chat.type != "private"
+          ? ctx.update.callback_query.reply_to_message.chat.id
+          : "";
+      message_id =
+        ctx.update.callback_query.reply_to_message.reply_to_message.message_id;
 
       User = {
         first_name: ctx.update.callback_query.reply_to_message.from.first_name,
-        last_name: ctx.update.callback_query.reply_to_message.from.last_name || '',
+        last_name:
+          ctx.update.callback_query.reply_to_message.from.last_name || "",
         telegram_id: telegram_id,
         group_id: group_id,
         group_type: ctx.update.callback_query.reply_to_message.chat.type,
         group_title: ctx.update.callback_query.reply_to_message.chat.title
       };
-
-
     } else {
       chatType = ctx.message.chat.type;
       telegram_id = ctx.message.from.id;
-      group_id = ctx.chat.type != 'private' ? ctx.chat.id : '';
+      group_id = ctx.chat.type != "private" ? ctx.chat.id : "";
       message_id = ctx.message.message_id;
 
       User = {
         first_name: ctx.message.from.first_name,
-        last_name: ctx.message.from.last_name || '',
+        last_name: ctx.message.from.last_name || "",
         telegram_id: telegram_id,
         group_id: group_id,
         group_type: ctx.chat.type,
         group_title: ctx.chat.title
       };
-
     }
 
-
-    if (chatType != 'private') {
-
-      return knex('Users')
+    if (chatType != "private") {
+      return knex("Users")
         .where({
           telegram_id: telegram_id,
           group_id: group_id
@@ -142,8 +122,9 @@ class Users {
         .asCallback((err, rows) => {
           if (err) return console.error(err);
           if (_.isEmpty(rows)) {
-            knex.transaction(function(t) {
-                return knex('Users')
+            knex
+              .transaction(function(t) {
+                return knex("Users")
                   .transacting(t)
                   .insert({
                     first_name: User.first_name,
@@ -157,31 +138,34 @@ class Users {
                   .then(t.commit)
                   .catch(function(err) {
                     t.rollback();
-                    winston.log('error', 'in first transaction catch ', err);
+                    winston.log("error", "in first transaction catch ", err);
                     ctx.reply(`${err} `);
                     throw err;
-                  })
+                  });
               })
               .then(function() {
-                return ctx.replyWithHTML(`<b>${User.first_name}</b> has been registered.`, { reply_to_message_id: message_id })
+                return ctx.replyWithHTML(
+                  `<b>${User.first_name}</b> has been registered.`,
+                  { reply_to_message_id: message_id }
+                );
               })
               .catch(function(err) {
-                winston.log('error', 'in the catch', err);
+                winston.log("error", "in the catch", err);
                 ctx.reply(`${err} `);
               });
           } else {
-            return ctx.replyWithHTML(`<b>${User.first_name}</b> is already registered.`, { reply_to_message_id: message_id })
+            return ctx.replyWithHTML(
+              `<b>${User.first_name}</b> is already registered.`,
+              { reply_to_message_id: message_id }
+            );
           }
-
         });
-
     } else {
-      return ctx.replyWithHTML(`command not available in private chat.`, { reply_to_message_id: message_id })
+      return ctx.replyWithHTML(`command not available in private chat.`, {
+        reply_to_message_id: message_id
+      });
     }
-
-
   }
-
 
   /**
    * retrieves the scores for users in the chat group.
@@ -194,35 +178,43 @@ class Users {
     let group = ctx.chat.id;
     let title = ctx.chat.title;
 
-    if (ctx.message.chat.type != 'private') {
-
-      return knex('Users')
+    if (ctx.message.chat.type != "private") {
+      return knex("Users")
         .where({
           group_id: group
         })
-        .whereNotNull('points')
+        .whereNotNull("points")
         .limit(15)
-        .orderBy('points', 'desc')
-        .then((data) => {
+        .orderBy("points", "desc")
+        .then(data => {
           let text = buildLeaderboardHTML(data);
           let latestDate = Date.now();
 
-
           if (messageId) {
-            ctx.replyWithHTML(`updated leaderboard`, { reply_to_message_id: messageId });
-            return ctx.telegram.editMessageText(group, messageId, '', `<b>${title} Leaderboard</b>\n\n${text} \n\n Last Update: ${latestDate}`, { disable_notification: true, parse_mode: 'html' })
-              .catch((err) => {
-                winston.log('error', err);
+            ctx.replyWithHTML(`updated leaderboard`, {
+              reply_to_message_id: messageId
+            });
+            return ctx.telegram
+              .editMessageText(
+                group,
+                messageId,
+                "",
+                `<b>${title} Leaderboard</b>\n\n${text} \n\n Last Update: ${latestDate}`,
+                { disable_notification: true, parse_mode: "html" }
+              )
+              .catch(err => {
+                winston.log("error", err);
                 ctx.replyWithHTML(`${err}`);
-              })
+              });
           } else {
-            return ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, { disable_notification: true });
+            return ctx.replyWithHTML(`<b>${title} Leaderboard</b>\n\n${text}`, {
+              disable_notification: true
+            });
           }
-
         })
         .catch(function(err) {
-          winston.log('error', err);
-        })
+          winston.log("error", err);
+        });
     }
   }
 
@@ -235,7 +227,7 @@ class Users {
     let group = ctx.chat.id;
     let stickiedPostId = ctx.update.message.pinned_message.message_id;
 
-    return knex('Votes')
+    return knex("Votes")
       .insert({
         group_id: group,
         message_id: stickiedPostId,
@@ -245,12 +237,10 @@ class Users {
         return true;
       })
       .catch(function(err) {
-        winston.log('error', err);
+        winston.log("error", err);
         return false;
-      })
-
+      });
   }
-
 
   /**
    * update message_id to latest pinned message.
@@ -258,11 +248,10 @@ class Users {
    * @return {bool}
    */
   updateStickyId(ctx) {
-
     let group = ctx.chat.id;
     let stickiedPostId = ctx.update.message.pinned_message.message_id;
 
-    return knex('Votes')
+    return knex("Votes")
       .where({
         group_id: group,
         isStickied: true
@@ -276,10 +265,9 @@ class Users {
         return true;
       })
       .catch(function(err) {
-        winston.log('error', err);
+        winston.log("error", err);
         return false;
-      })
-
+      });
   }
 
   /**
@@ -290,25 +278,22 @@ class Users {
   checkStickyId(ctx) {
     let group = ctx.chat.id;
 
-    return knex('Votes')
+    return knex("Votes")
       .where({
         group_id: group,
         isStickied: true
       })
-      .then((rows) => {
+      .then(rows => {
         if (!_.isEmpty(rows)) {
           return true;
         }
         return false;
-
       })
       .catch(function(err) {
-        winston.log('error', err);
+        winston.log("error", err);
         return false;
-      })
-
+      });
   }
-
 
   /**
    * get user who is upvoted the most
@@ -323,28 +308,22 @@ class Users {
   retrieveStats(ctx) {
     let group = ctx.chat.id;
 
-
-    return knex('Votes')
+    return knex("Votes")
       .where({
         group_id: group,
         isStickied: true
       })
-      .then((rows) => {
+      .then(rows => {
         if (!_.isEmpty(rows)) {
           return true;
         }
         return false;
-
       })
       .catch(function(err) {
-        winston.log('error', err);
+        winston.log("error", err);
         return false;
-      })
-
+      });
   }
-
-
-
 
   /**
    * get the post with highest count of voters
@@ -352,13 +331,13 @@ class Users {
    * @return {int} the message id.
    */
   getMostUpvotedPost(ctx) {
-
     let groupId = ctx.update.message.chat.id;
     let groupName = ctx.update.message.chat.title;
     let messageId, count;
 
-
-    return knex.raw(`
+    return knex
+      .raw(
+        `
         SELECT DISTINCT
           COUNT (
             "public"."Votes".message_id
@@ -378,12 +357,12 @@ class Users {
           message DESC
         LIMIT
           6
-        `)
+        `
+      )
       .then(function(results) {
-
         if (!_.isEmpty(results)) {
-          messageId = results.rows[0]['message_id'];
-          count = results.rows[0]['message'];
+          messageId = results.rows[0]["message_id"];
+          count = results.rows[0]["message"];
 
           // get more metrics on message id later
           // test(groupId, messageId);
@@ -392,45 +371,39 @@ class Users {
         }
 
         return ctx.replyWithHTML(`no results`);
-      })
+      });
   }
 
-
-
   castVote(ctx, botName) {
-
     let voter = ctx.update.callback_query.from.first_name;
     let voterUserId = ctx.update.callback_query.from.id;
-    let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
+    let messageId =
+      ctx.update.callback_query.message.reply_to_message.message_id;
     let data = ctx.update.callback_query.data;
 
     let id = ctx.update.callback_query.message.reply_to_message.from.id;
     let chatId = ctx.update.callback_query.message.chat.id;
-    let name = ctx.update.callback_query.message.reply_to_message.from.first_name;
+    let name =
+      ctx.update.callback_query.message.reply_to_message.from.first_name;
 
-    return knex('Votes')
+    return knex("Votes")
       .where({
         telegram_id: voterUserId,
         message_id: messageId
       })
       .then(function(rows) {
-
         if (rows == 0) {
-
-          return knex('Votes')
-            .insert({
-              telegram_id: voterUserId,
-              message_id: messageId,
-              canIncrement: true,
-              group_id: chatId,
-              name: name,
-              voter: voter,
-              vote: data
-            })
-
+          return knex("Votes").insert({
+            telegram_id: voterUserId,
+            message_id: messageId,
+            canIncrement: true,
+            group_id: chatId,
+            name: name,
+            voter: voter,
+            vote: data
+          });
         } else {
-
-          return knex('Votes')
+          return knex("Votes")
             .where({
               telegram_id: voterUserId,
               message_id: messageId
@@ -438,198 +411,185 @@ class Users {
             .update({
               canIncrement: false,
               vote: data
-            })
+            });
         }
-
       })
       .then(() => {
         return this.countVotes(ctx, data);
       })
       .then(() => {
-
-        return knex('Votes')
+        return knex("Votes")
           .where({
             telegram_id: voterUserId,
             message_id: messageId,
             canIncrement: true
           })
-          .then((rows) => {
-
+          .then(rows => {
             let Countobj = _.countBy(rows);
             if (_.isEmpty(Countobj)) {
-              winston.log('info', `${voterUserId} changed their vote to ${data}`);
+              winston.log(
+                "info",
+                `${voterUserId} changed their vote to ${data}`
+              );
             } else {
-
-              return knex('Users')
+              return knex("Users")
                 .where({
                   telegram_id: id,
                   group_id: chatId
                 })
-                .increment('points', 1)
+                .increment("points", 1)
                 .asCallback((err, rows) => {
-
                   if (err) return console.error(err);
                   if (rows == 0) {
-
                     if (name.toLowerCase() == botName.toLowerCase()) {
-                      return ctx.editMessageText(`cannot vote for bots`).catch((err) => winston.log('error', err));
+                      return ctx
+                        .editMessageText(`cannot vote for bots`)
+                        .catch(err => winston.log("error", err));
                     } else {
-
-                      return ctx.editMessageText(`${name} needs to /register`).catch((err) => winston.log('error', err));
+                      return ctx
+                        .editMessageText(`${name} needs to /register`)
+                        .catch(err => winston.log("error", err));
 
                       // auto register user
                       //return this.registerUser(ctx, true);
                     }
                   } else {
-                    winston.log('info', `${name} has been upvoted in group ${chatId}`);
+                    winston.log(
+                      "info",
+                      `${name} has been upvoted in group ${chatId}`
+                    );
                   }
                 })
                 .catch(function(err) {
-                  winston.log('error', err);
-                })
-
+                  winston.log("error", err);
+                });
             }
-
-          })
-
+          });
       })
       .catch(function(err) {
-        winston.log('error', err);
-      })
-
+        winston.log("error", err);
+      });
   }
 
-
-
-
   countVotes(ctx, data) {
+    winston.log("info", "attempting to count votes");
+    let messageId =
+      ctx.update.callback_query.message.reply_to_message.message_id;
+    winston.log("info", "data is", data);
 
-    winston.log('info', 'attempting to count votes');
-    let messageId = ctx.update.callback_query.message.reply_to_message.message_id;
-    winston.log('info', 'data is', data);
-
-    knex('Votes')
+    knex("Votes")
       .where({
         message_id: messageId
       })
-      .select('vote')
+      .select("vote")
       .then(function(rows) {
-        let Countobj = _.countBy(rows, 'vote');
+        let Countobj = _.countBy(rows, "vote");
         rebuildMenuButtons(ctx, Countobj);
       })
       .catch(function(err) {
-        winston.log('error', err);
-      })
-
+        winston.log("error", err);
+      });
   }
 
-
   updateLeaderboard(ctx, group, title) {
-
-    let p = Promise
-      .resolve(this.getStickiedMessageId(ctx))
-      .then((messageId) => {
-
-        return knex('Users')
+    let p = Promise.resolve(this.getStickiedMessageId(ctx))
+      .then(messageId => {
+        return knex("Users")
           .where({
             group_id: group
           })
-          .whereNotNull('points')
+          .whereNotNull("points")
           .limit(15)
-          .orderBy('points', 'desc')
-          .then((data) => {
+          .orderBy("points", "desc")
+          .then(data => {
             let text = buildLeaderboardHTML(data);
             let latestDate = Date.now();
 
-            return ctx.telegram.editMessageText(group, messageId, '', `<b>${title} Leaderboard</b>\n\n${text} \n\n Last Update: ${latestDate}`, { disable_notification: true, parse_mode: 'html' })
-              .catch((err) => {
-                winston.log('error', err);
+            return ctx.telegram
+              .editMessageText(
+                group,
+                messageId,
+                "",
+                `<b>${title} Leaderboard</b>\n\n${text} \n\n Last Update: ${latestDate}`,
+                { disable_notification: true, parse_mode: "html" }
+              )
+              .catch(err => {
+                winston.log("error", err);
                 ctx.replyWithHTML(`${err}`);
-              })
-
+              });
           })
           .catch(function(err) {
-            winston.log('error', err);
-          })
-
+            winston.log("error", err);
+          });
       })
       .catch(function(err) {
-        winston.log('error', err);
-      })
-
-
+        winston.log("error", err);
+      });
   }
-
-
-
-
-
 }
 
 function rebuildMenuButtons(ctx, countObj) {
-
-  let originalMessageId = ctx.update.callback_query.message.reply_to_message.message_id;
+  let originalMessageId =
+    ctx.update.callback_query.message.reply_to_message.message_id;
   let latestDate = ctx.update.callback_query.message.edit_date || Date.now();
 
-  return ctx.editMessageText(`<i>choose a button to upvote</i> (last updated: ${latestDate})`, Extra
-    .inReplyTo(originalMessageId)
-    .notifications(false)
-    .HTML()
-    .markup(
-      Markup.inlineKeyboard([
-        Markup.callbackButton(`${countObj.tearsofjoy || ''} 😂`, 'tearsofjoy'),
-        Markup.callbackButton(`${countObj.thumbsup || ''} 👍`, 'thumbsup'),
-        Markup.callbackButton(`${countObj.heart || ''} ❤`, 'heart'),
-        Markup.callbackButton(`${countObj.fire || ''} 🔥`, 'fire'),
-        // Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
-        Markup.callbackButton(`${countObj.hundred || ''} 💯`, 'hundred')
-      ])));
-
+  return ctx.editMessageText(
+    `<i>choose a button to upvote</i> (last updated: ${latestDate})`,
+    Extra.inReplyTo(originalMessageId)
+      .notifications(false)
+      .HTML()
+      .markup(
+        Markup.inlineKeyboard([
+          Markup.callbackButton(
+            `${countObj.tearsofjoy || ""} 😂`,
+            "tearsofjoy"
+          ),
+          Markup.callbackButton(`${countObj.thumbsup || ""} 👍`, "thumbsup"),
+          Markup.callbackButton(`${countObj.heart || ""} ❤`, "heart"),
+          Markup.callbackButton(`${countObj.fire || ""} 🔥`, "fire"),
+          // Markup.callbackButton(`${countObj.clap || ''} 👏`, 'clap'),
+          Markup.callbackButton(`${countObj.hundred || ""} 💯`, "hundred")
+        ])
+      )
+  );
 }
-
 
 function buildLeaderboardHTML(data) {
   let cleanObj = _.map(data, formatObject);
 
   let text = cleanObj.map((data, index) => {
-    let string = '';
+    let string = "";
     string += `${index + 1} : <i>${data.name}</i> -- ${data.points}`;
     if (index === 0) {
-      string += ' 👑';
+      string += " 👑";
     }
     return string;
-  })
-  text = text.join('\n');
+  });
+  text = text.join("\n");
 
   return text;
 }
 
-
-
 function formatObject(dirtyObj) {
   let obj = {};
-  obj['name'] = dirtyObj.first_name;
-  obj['points'] = dirtyObj.points;
+  obj["name"] = dirtyObj.first_name;
+  obj["points"] = dirtyObj.points;
 
   return obj;
 }
 
-
-
 function test(groupId, messageId) {
-  winston.log('debug', 'in here at least');
+  winston.log("debug", "in here at least");
 
-
-  return knex('Votes')
+  return knex("Votes")
     .where({
       group_id: groupId,
       message_id: messageId
     })
     .then(function(results) {
-      winston.log('debug', 'results', results);
+      winston.log("debug", "results", results);
       return results;
-    })
+    });
 }
 
-
-export default Users;
+module.exports = Users;
