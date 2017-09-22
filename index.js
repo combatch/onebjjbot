@@ -19,7 +19,7 @@ let env = process.env.NODE_ENV || 'development';
 let tmp = path.resolve('tmp');
 
 const Telegraf = require('telegraf');
-const { Extra, Markup } = Telegraf;
+const { Extra, memorySession, Markup } = Telegraf;
 const bot = new Telegraf(config[`${env}`]['token']);
 const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
@@ -38,7 +38,16 @@ const dictionary = new Dictionary();
 
 
 // middlewares
-bot.use(Telegraf.memorySession());
+bot.use(memorySession());
+
+bot.use((ctx, next) => {
+  const start = new Date()
+  return next().then(() => {
+    const ms = new Date() - start
+    console.log('response time %sms', ms)
+  })
+})
+
 
 bot.telegram.getMe().then((botInfo) => {
   bot.options.id = botInfo.id;
@@ -47,6 +56,7 @@ bot.telegram.getMe().then((botInfo) => {
 
 // to mention username
 //<a href="tg://user?id=${userID}">${first_name}</a>
+
 
 
 
@@ -60,13 +70,6 @@ bot.hears(/\/losers/, (ctx) => {
 
 bot.hears(/\/volume/, (ctx) => {
   return crypto.getCoinCapVolume(ctx);
-});
-
-bot.hears(/\/ticker/, (ctx) => {
-  return bitcoin.getLiveTicker(ctx);
-});
-bot.hears(/\/stop/, (ctx) => {
-  return bitcoin.stopLiveTicker(ctx);
 });
 
 bot.hears(/\/balance ([13][a-km-zA-HJ-NP-Z0-9]{26,33}$)/, (ctx) => {
@@ -122,10 +125,16 @@ bot.hears(/caralho/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1126);
 });
 
-
 bot.hears(/\img (.+)/i, (ctx) => {
-  return google.imgSearch(ctx);
+  return google.asyncimgSearch(ctx);
 });
+
+
+// bot.hears(/\img (.+)/i, (ctx) => {
+//   return google.imgSearch(ctx);
+// });
+
+
 
 // bot.hears(/\img (.+)/i, (ctx) => {
 
