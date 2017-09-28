@@ -65,60 +65,6 @@ class Google {
     });
   }
 
-  getGifs(ctx) {
-    let query = ctx.match[1].replace(/[?=]/g, " ");
-    let replyTo = ctx.update.message.message_id;
-
-    request(
-      "https://www.googleapis.com/customsearch/v1?q=" +
-        query +
-        "&cx=" +
-        conf.apis.CX +
-        "&imgSize=large&fileType=gif&imgType=photo&num=30&safe=off&searchType=image&key=" +
-        conf.apis.IMAGE,
-      function(error, response, body) {
-        if (error) {
-          console.log("debug", error);
-          return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
-        }
-
-        let data = JSON.parse(body);
-
-        if (data.searchInformation.totalResults == 0) {
-          return ctx.reply(`no results found for ${query}`, {
-            reply_to_message_id: replyTo
-          });
-        } else {
-          let filtered = filterGifResults(data);
-          if (filtered.length) {
-            let random = _.sample(filtered);
-            winston.log("info", "query : ", query, random);
-
-            ctx.replyWithChatAction("upload_video");
-
-            // saving / uploading from server b/c it should be faster
-
-            request
-              .get(random.url, { timeout: 1800 })
-              .pipe(fs.createWriteStream(`${tmp}/${query}.gif`))
-              .on("finish", function(data, err) {
-                var gif = fs.createReadStream(`${tmp}/${query}.gif`);
-                return ctx.replyWithVideo(
-                  { source: gif },
-                  { disable_notification: true }
-                );
-                //return ctx.replyWithDocument({ url: random['url'], filename: `${query}.gif` }, { disable_notification: true });
-              });
-          } else {
-            return ctx.reply(`no valid results found for ${query}`, {
-              reply_to_message_id: replyTo
-            });
-          }
-        }
-      }
-    );
-  }
-
   async asyncimgSearch(ctx) {
     let query = ctx.match[1].replace(/[?=]/g, " ");
     let replyTo = ctx.update.message.message_id;
@@ -136,13 +82,26 @@ class Google {
 
     ctx.replyWithChatAction("upload_photo");
 
+    ctx.replyWithPhoto(first.url);
+    // if status != 200, return error;
+    axios
+      .get(first.url)
+      .then(x => {
+        if (x.status !== 200) {
+          return ctx.replyWithPhoto(filtered[1].url);
+        }
+      })
+      .catch(err => {
+        console.log("err", err);
+        return ctx.replyWithHTML(`error: ${err}`);
+      });
+
     // // url
     // await ctx.replyWithPhoto({
     //   url: first.url
     // });
 
     // url via Telegram servers
-    await ctx.replyWithPhoto(first.url);
 
     // add "next image" button
     // remove each result from image cache
@@ -165,10 +124,16 @@ class Google {
   }
 
   cleanImageResults(data) {
-    if (data.searchInformation.totalResults === 0) {
+    if (data.searchInformation.totalResults == 0) {
       return false;
     }
     return filterImageResults(data);
+  }
+
+  async insertLoadingGif(ctx) {
+    let returnCTX = await ctx.replyWithVideo(`https://i.imgur.com/sWnfVTj.gif`);
+
+    return returnCTX;
   }
 
   imgSearch(ctx) {
@@ -243,48 +208,52 @@ class Google {
     );
   }
 
-  tenorSearch(ctx) {
+  async getGifResults(query) {
+    return axios
+      .get(
+        `https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`
+      )
+      .then(x => {
+        return x.data;
+      })
+      .catch(err => {
+        winston.log("error", "failed in getGifResults", err);
+      });
+  }
+
+  async tenorSearch(ctx) {
     let query = ctx.match[1].replace(/[?=]/g, " ");
     let replyTo = ctx.update.message.message_id;
 
-    var options = {
-      method: "GET",
-      url: "https://api.tenor.co/v1/search",
-      qs: {
-        tag: query,
-        key: "41S2CSB7PHJ7",
-        safesearch: "off"
-      },
-      headers: {
-        "cache-control": "no-cache"
-      }
-    };
+    let newContext = await this.insertLoadingGif(ctx);
 
-    request(options, function(error, response, body) {
-      if (error) {
-        console.log("debug", error);
-      }
-      let data = JSON.parse(body);
+    let chatId = newContext.chat.id;
+    let messageId = newContext.message_id;
 
-      if (data.results.length == 0) {
-        return ctx.reply(`no results found for ${query}`, {
-          reply_to_message_id: replyTo
-        });
-      } else {
-        let filtered = filterTenorResults(data);
+    let data = await this.getGifResults(query);
 
-        if (filtered.length) {
-          let random = _.sample(filtered);
+    if (data.results.length == 0) {
+      await ctx.telegram.deleteMessage(chatId, messageId);
+      return ctx.reply(`no results found for ${query}`, {
+        reply_to_message_id: replyTo
+      });
+    }
 
-          ctx.replyWithChatAction("upload_video");
-          return ctx.replyWithVideo({ url: random["url"] });
-        } else {
-          return ctx.reply(`no valid results found for ${query}`, {
-            reply_to_message_id: replyTo
-          });
-        }
-      }
-    });
+    let filtered = filterTenorResults(data);
+
+    if (filtered.length) {
+      let random = _.sample(filtered);
+
+      ctx.replyWithChatAction("upload_video");
+
+      await ctx.replyWithVideo(random["url"]);
+      return ctx.telegram.deleteMessage(chatId, messageId);
+    } else {
+      await ctx.telegram.deleteMessage(chatId, messageId);
+      return ctx.reply(`no valid results found for ${query}`, {
+        reply_to_message_id: replyTo
+      });
+    }
   }
 
   searchYoutube(ctx) {

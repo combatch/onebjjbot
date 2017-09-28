@@ -1,13 +1,13 @@
 {
   "name": "onebjjbot",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "telegram bot written in node.js for one jiu jitsu. async/await",
-  "main": "index.js",
+  "main": "onebjjbot.js",
   "scripts": {
-    "dev": "nodemon index.js --ignore tmp/ --exec babel-node --presets es2015,stage-0 ",
+    "dev": "nodemon onebjjbot.js --ignore tmp/ --exec babel-node --presets es2015,stage-0 ",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel index.js -o app.js",
-    "prod": "cross-env NODE_ENV=production pm2 start index.js"
+    "build": "babel onebjjbot.js -o app.js",
+    "prod": "cross-env NODE_ENV=production pm2 start onebjjbot.js"
   },
   "repository": {
     "type": "git",
