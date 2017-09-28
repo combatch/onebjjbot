@@ -90,7 +90,7 @@ bot.hears(/\/chart/i, ctx => {
 });
 
 bot.hears(/\gif (.+)/i, ctx => {
-  return google.getGifs(ctx);
+  return google.tenorSearch(ctx);
 });
 
 bot.hears(/\youtube (.+)/i, ctx => {
@@ -122,13 +122,12 @@ bot.hears(/\img (.+)/i, ctx => {
   return google.asyncimgSearch(ctx);
 });
 
+
 // bot.hears(/\img (.+)/i, (ctx) => {
 //   return google.imgSearch(ctx);
 // });
 
-bot.hears(/giphy (.+)/i, ctx => {
-  return google.tenorSearch(ctx);
-});
+
 
 bot.hears(/\/ud (.+)/i, ctx => {
   return dictionary.urbanDictionary(ctx);
