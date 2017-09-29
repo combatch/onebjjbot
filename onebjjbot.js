@@ -12,6 +12,7 @@ let Crypto = require("./imports/crypto");
 let Sounds = require("./imports/sounds");
 let Files = require("./imports/fileStreams");
 let Dictionary = require("./imports/dictionary");
+let Job = require("./imports/jobs");
 let path = require("path");
 let _ = require("lodash");
 
@@ -32,6 +33,7 @@ const crypto = new Crypto();
 const sounds = new Sounds();
 const file = new Files();
 const dictionary = new Dictionary();
+
 
 // migrations.migrateLatest();
 
@@ -118,14 +120,13 @@ bot.hears(/caralho/i, ctx => {
   return sounds.getIndividualSound(ctx, 1126);
 });
 
-bot.hears(/\img (.+)/i, ctx => {
-  return google.asyncimgSearch(ctx);
+bot.hears(/\imgs (.+)/i, ctx => {
+  return google.asyncimgSearch(ctx, bot);
 });
 
-
-// bot.hears(/\img (.+)/i, (ctx) => {
-//   return google.imgSearch(ctx);
-// });
+bot.hears(/\img (.+)/i, (ctx) => {
+  return google.imgSearch(ctx);
+});
 
 
 
@@ -141,9 +142,7 @@ bot.hears(/translate (.+)/i, ctx => {
   if (ctx.message.reply_to_message) {
     google.translate(ctx);
   } else {
-    return ctx.reply(
-      'usage: reply to a message with "translate <foreignlanguage>"'
-    );
+    return ctx.reply('usage: reply to a message with "translate <foreignlanguage>"');
   }
 });
 
@@ -377,6 +376,7 @@ bot.action("hundred", (ctx, next) => {
     })
     .then(next);
 });
+
 
 bot.catch(err => {
   winston.log("debug", "in bot catch error");
