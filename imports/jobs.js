@@ -10,6 +10,12 @@ const { Extra, memorySession, reply, Markup, replyOptions } = Telegraf;
 class Job {
   constructor() {}
 
+  async insertLoadingGif(ctx) {
+    let returnCTX = await ctx.replyWithVideo(`https://i.imgur.com/sWnfVTj.gif`);
+
+    return returnCTX;
+  }
+
   async createButtons(ctx, bot) {
     // console.log("cache", ctx.session.imageCache);
 
@@ -29,6 +35,7 @@ class Job {
 
     bot.on("callback_query", ctx => {
       this.modular(ctx);
+      ctx.telegram.deleteMessage(chatId, ctx.session.unUsed);
     });
 
     ctx.session.unUsed = message.message_id;
@@ -36,6 +43,10 @@ class Job {
   }
 
   async modular(ctx) {
+    let newContext = await this.insertLoadingGif(ctx);
+    let gifChatId = newContext.chat.id;
+    let gifMessageId = newContext.message_id;
+
     if (ctx.session.toDelete) {
       ctx.deleteMessage();
     }
@@ -43,6 +54,8 @@ class Job {
     let data = ctx.update.callback_query.data;
     ctx.answerCallbackQuery(`selected ${data}`);
     ctx.replyWithChatAction("upload_photo");
+
+    await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
 
     let target = await ctx.replyWithPhoto(
       ctx.session.imageCache[`${data}`].url,
