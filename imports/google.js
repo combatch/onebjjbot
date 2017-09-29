@@ -17,6 +17,8 @@ let youTube = new YouTube();
 
 youTube.setKey(conf.apis.youtube);
 
+const Job = require("./jobs.js");
+
 /** Class representing knex Google. */
 class Google {
   /**
@@ -65,9 +67,69 @@ class Google {
     });
   }
 
-  async asyncimgSearch(ctx) {
+  async asyncimgSearch(ctx, bot) {
     let query = ctx.match[1].replace(/[?=]/g, " ");
     let replyTo = ctx.update.message.message_id;
+    let chatId = ctx.update.message.chat.id;
+
+    let googleResults = await this.getImgResults(query);
+    let filtered = await this.cleanImageResults(googleResults);
+
+    if (!filtered) {
+      return ctx.replyWithHTML(`no valid results found for <i>${query}</i>`, {
+        reply_to_message_id: replyTo
+      });
+    }
+
+    let newContext = await this.insertLoadingGif(ctx);
+    let gifChatId = newContext.chat.id;
+    let gifMessageId = newContext.message_id;
+
+    let first = filtered[0];
+    ctx.session.imageCache = filtered;
+
+    ctx.replyWithChatAction("upload_photo");
+
+    if (ctx.session.unUsed) {
+      if (!ctx.session.oldImage) {
+        ctx.telegram.deleteMessage(chatId, ctx.session.unUsed);
+      }
+    }
+
+    await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
+    let job = new Job();
+    await job.createButtons(ctx, bot);
+
+    if (ctx.session.oldImage) {
+      ctx.telegram.deleteMessage(chatId, ctx.session.oldImage);
+    }
+  }
+
+  async getImgResults(query) {
+    return axios
+      .get(
+        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis
+          .CX}&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf.apis.IMAGE}`
+      )
+      .then(x => {
+        return x.data;
+      })
+      .catch(err => {
+        winston.log("error", "failed in getImgResults", err);
+      });
+  }
+
+  cleanImageResults(data) {
+    if (data.searchInformation.totalResults == 0) {
+      return false;
+    }
+    return filterImageResults(data);
+  }
+
+  async imgSearch(ctx, bot) {
+    let query = ctx.match[1].replace(/[?=]/g, " ");
+    let replyTo = ctx.update.message.message_id;
+    let chatId = ctx.update.message.chat.id;
 
     let googleResults = await this.getImgResults(query);
     let filtered = await this.cleanImageResults(googleResults);
@@ -95,39 +157,6 @@ class Google {
         console.log("err", err);
         return ctx.replyWithHTML(`error: ${err}`);
       });
-
-    // // url
-    // await ctx.replyWithPhoto({
-    //   url: first.url
-    // });
-
-    // url via Telegram servers
-
-    // add "next image" button
-    // remove each result from image cache
-    // reset cache on new image search?
-  }
-
-  async getImgResults(query) {
-    return axios
-      .get(
-        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis
-          .CX}&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf
-          .apis.IMAGE}`
-      )
-      .then(x => {
-        return x.data;
-      })
-      .catch(err => {
-        winston.log("error", "failed in getImgResults", err);
-      });
-  }
-
-  cleanImageResults(data) {
-    if (data.searchInformation.totalResults == 0) {
-      return false;
-    }
-    return filterImageResults(data);
   }
 
   async insertLoadingGif(ctx) {
@@ -136,83 +165,9 @@ class Google {
     return returnCTX;
   }
 
-  imgSearch(ctx) {
-    let query = ctx.match[1].replace(/[?=]/g, " ");
-    let replyTo = ctx.update.message.message_id;
-
-    request(
-      "https://www.googleapis.com/customsearch/v1?q=" +
-        query +
-        "&cx=" +
-        conf.apis.CX +
-        "&imgSize=large&imgType=photo&num=5&safe=off&searchType=image&key=" +
-        conf.apis.IMAGE,
-      function(error, response, body) {
-        if (error) {
-          console.log("error", error);
-          return ctx.reply(`error: ${error}`, { reply_to_message_id: replyTo });
-        }
-
-        let data = JSON.parse(body);
-
-        if (data.searchInformation.totalResults == 0) {
-          return ctx.reply(`no results found for ${query}`, {
-            reply_to_message_id: replyTo
-          });
-        } else {
-          let filtered = filterImageResults(data);
-
-          if (filtered.length) {
-            let first = filtered[0];
-
-            winston.log("info", "query : ", query, first);
-            ctx.replyWithChatAction("upload_photo");
-
-            request
-              .get(first.url, { timeout: 1800 })
-              .on("error", function(err) {
-                winston.log("error", ` in img search error, ${query}`);
-                ctx.reply(
-                  `error with query  '${query}', bad link? - ${first[
-                    "url"
-                  ]} \ntrying the next result`,
-                  { reply_to_message_id: replyTo }
-                );
-                return ctx.replyWithPhoto(
-                  { url: filtered[1]["url"], filename: `${query}.gif` },
-                  { disable_notification: true }
-                );
-              })
-              .pipe(
-                fs.createWriteStream(`${tmp}/${query}${first["extension"]}`)
-              )
-              .on("finish", function(data, err) {
-                var gif = fs.createReadStream(
-                  `${tmp}/${query}${first["extension"]}`
-                );
-                return ctx.replyWithPhoto(
-                  {
-                    url: first["url"],
-                    filename: `${query}${first["extension"]}`
-                  },
-                  { disable_notification: true }
-                );
-              });
-          } else {
-            return ctx.reply(`no valid results found for ${query}`, {
-              reply_to_message_id: replyTo
-            });
-          }
-        }
-      }
-    );
-  }
-
   async getGifResults(query) {
     return axios
-      .get(
-        `https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`
-      )
+      .get(`https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`)
       .then(x => {
         return x.data;
       })
@@ -331,6 +286,7 @@ function filterImageResults(data) {
       if (isInArray(extension, allowedExtensions)) {
         obj["url"] = image.link;
         obj["extension"] = extension;
+        obj["title"] = image.title;
         return obj;
       }
     }
