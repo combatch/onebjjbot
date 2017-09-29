@@ -24,10 +24,7 @@ class Google {
   /**
    * description would be here.
    */
-  constructor() {
-    //  https://www.googleapis.com/customsearch/v1?q=cats&cx=008137582627970372877%3A6iaduwmf0xs&imgSize=large&imgType=photo&safe=off&searchType=image&key={YOUR_API_KEY}
-    //
-  }
+  constructor() {}
 
   /**
    * runs Google
@@ -140,15 +137,17 @@ class Google {
       });
     }
     let first = filtered[0];
+    console.log(first);
     ctx.session.imageCache = filtered;
 
-    ctx.replyWithChatAction("upload_photo");
+    await ctx.replyWithChatAction("upload_photo");
 
-    ctx.replyWithPhoto(first.url);
+    await ctx.replyWithPhoto({ url: first.url });
     // if status != 200, return error;
     axios
       .get(first.url)
       .then(x => {
+        console.log(x.status);
         if (x.status !== 200) {
           return ctx.replyWithPhoto(filtered[1].url);
         }

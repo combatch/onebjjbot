@@ -35,7 +35,6 @@ class Job {
 
     bot.on("callback_query", ctx => {
       this.modular(ctx);
-      ctx.telegram.deleteMessage(chatId, ctx.session.unUsed);
     });
 
     ctx.session.unUsed = message.message_id;
