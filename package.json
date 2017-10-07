@@ -1,6 +1,6 @@
 {
   "name": "onebjjbot",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "telegram bot written in node.js for one jiu jitsu. async/await",
   "main": "onebjjbot.js",
   "scripts": {
@@ -41,6 +41,7 @@
     "jsonfile": "^4.0.0",
     "knex": "^0.13.0",
     "lodash": "^4.17.4",
+    "moment": "^2.18.1",
     "node-horseman": "^3.3.0",
     "nodemon": "^1.12.1",
     "pg": "^7.3.0",
@@ -51,6 +52,7 @@
     "postgres-bytea": "^1.0.0",
     "postgres-date": "^1.0.3",
     "pretty-error": "^2.1.1",
+    "public-instagram": "^0.2.1",
     "readdirp": "^2.1.0",
     "request": "^2.82.0",
     "telegraf": "^3.11.1",
