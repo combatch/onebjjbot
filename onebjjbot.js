@@ -13,6 +13,7 @@ let Sounds = require("./imports/sounds");
 let Files = require("./imports/fileStreams");
 let Dictionary = require("./imports/dictionary");
 let Job = require("./imports/jobs");
+let Instagram = require("./imports/instagram");
 let path = require("path");
 let _ = require("lodash");
 
@@ -33,6 +34,7 @@ const crypto = new Crypto();
 const sounds = new Sounds();
 const file = new Files();
 const dictionary = new Dictionary();
+const instagram = new Instagram();
 
 
 // migrations.migrateLatest();
@@ -132,6 +134,10 @@ bot.hears(/\img (.+)/i, (ctx) => {
 
 bot.hears(/\/ud (.+)/i, ctx => {
   return dictionary.urbanDictionary(ctx);
+});
+
+bot.hears(/\ig (.+)/i, ctx => {
+  return instagram.handleIG(ctx);
 });
 
 bot.hears(/\/define (.+)/i, ctx => {
