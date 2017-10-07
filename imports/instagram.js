@@ -27,9 +27,9 @@ class Instagram {
     if (symbol == "#") {
       return this.hashtagSearch(ctx, query);
     }
-    // if (symbol == "@") {
-    //   this.userSearch(ctx, query);
-    // }
+    if (symbol == "@") {
+      this.userSearch(ctx, query);
+    }
   }
 
   async hashtagSearch(ctx, query) {
@@ -42,10 +42,11 @@ class Instagram {
     ctx.replyWithChatAction("upload_photo");
 
     const info = await instagram.tags.recent(query, 2);
+    console.log(info);
     if (info.response) {
       if (info.response.data.status == "fail") {
         await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
-        return ctx.replyWithHTML(`no ig results found for <i>${query}</i>`, {
+        return ctx.replyWithHTML(`${info.response.data.message} <i>${query}</i>`, {
           reply_to_message_id: replyTo
         });
       }
@@ -59,18 +60,27 @@ class Instagram {
   async userSearch(ctx, query) {
     let replyTo = ctx.update.message.message_id;
 
-    const user = await instagram.users.posts("instagram");
+    let newContext = await this.insertLoadingGif(ctx);
+    let gifChatId = newContext.chat.id;
+    let gifMessageId = newContext.message_id;
 
-    if (info.response) {
-      if (info.response.data.status == "fail") {
-        return ctx.replyWithHTML(`no ig results found for <i>${query}</i>`, {
+    const user = await instagram.users.posts(query, 2);
+    console.log(user);
+
+    if (user.response) {
+      if (user.response.data.status == "fail") {
+        await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
+        return ctx.replyWithHTML(`${user.response.data.message} <i>${query}</i> maybe have a private profile.`, {
           reply_to_message_id: replyTo
         });
       }
     }
 
-    // let filtered = await this.filterTopPhotos(info);
-    // return this.displayImage(ctx, filtered[0]);
+    let filtered = await this.filterTopPhotos(user);
+    await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
+    //return this.displayImage(ctx, filtered[0]);
+    // most recent
+    return this.displayImage(ctx, user[0]);
   }
 
   async filterTopPhotos(data) {
