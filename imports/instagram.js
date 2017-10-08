@@ -70,7 +70,7 @@ class Instagram {
     if (user.response) {
       if (user.response.data.status == "fail") {
         await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
-        return ctx.replyWithHTML(`${user.response.data.message} <i>${query}</i> maybe have a private profile.`, {
+        return ctx.replyWithHTML(`${user.response.data.message} <i>${query}</i> may have a private profile.`, {
           reply_to_message_id: replyTo
         });
       }
@@ -84,6 +84,7 @@ class Instagram {
   }
 
   async filterTopPhotos(data) {
+    console.log('data in filter', data)
     let top = _.sortBy(data, [o => o.likes.count]).reverse();
 
     winston.log("debug", top);
