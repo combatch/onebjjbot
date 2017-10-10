@@ -5,7 +5,7 @@
   "main": "onebjjbot.js",
   "scripts": {
     "dev": "nodemon onebjjbot.js --ignore tmp/",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "pm2 stop onebjjbot && git pull && npm run prod",
     "build": "babel onebjjbot.js -o app.js",
     "prod": "cross-env NODE_ENV=production pm2 start onebjjbot.js"
   },

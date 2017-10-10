@@ -23,6 +23,7 @@ class Instagram {
     let query = ctx.match[1].replace(/[?=]/g, " ");
     let symbol = query.substring(0, 1);
     query = query.substring(1);
+    query = query.toLowerCase();
 
     if (symbol == "#") {
       return this.hashtagSearch(ctx, query);
@@ -41,7 +42,7 @@ class Instagram {
 
     ctx.replyWithChatAction("upload_photo");
 
-    const info = await instagram.tags.recent(query, 2);
+    const info = await instagram.tags.recent(query, 3);
     console.log(info);
     if (info.response) {
       if (info.response.data.status == "fail") {
@@ -64,15 +65,18 @@ class Instagram {
     let gifChatId = newContext.chat.id;
     let gifMessageId = newContext.message_id;
 
-    const user = await instagram.users.posts(query, 2);
+    const user = await instagram.users.posts(query, 1);
     console.log(user);
 
     if (user.response) {
       if (user.response.data.status == "fail") {
         await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
-        return ctx.replyWithHTML(`${user.response.data.message} <i>${query}</i> may have a private profile.`, {
-          reply_to_message_id: replyTo
-        });
+        return ctx.replyWithHTML(
+          `${user.response.data.message} <i>${query}</i> may have a private profile.`,
+          {
+            reply_to_message_id: replyTo
+          }
+        );
       }
     }
 
@@ -84,7 +88,7 @@ class Instagram {
   }
 
   async filterTopPhotos(data) {
-    console.log('data in filter', data)
+    console.log("data in filter", data);
     let top = _.sortBy(data, [o => o.likes.count]).reverse();
 
     winston.log("debug", top);
