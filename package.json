@@ -44,6 +44,7 @@
     "moment": "^2.18.1",
     "node-horseman": "^3.3.0",
     "nodemon": "^1.12.1",
+    "npm-address-translator": "^1.0.4",
     "pg": "^7.3.0",
     "pg-hstore": "^2.3.2",
     "phantomjs-prebuilt": "^2.1.15",

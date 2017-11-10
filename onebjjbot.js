@@ -36,7 +36,6 @@ const file = new Files();
 const dictionary = new Dictionary();
 const instagram = new Instagram();
 
-
 // migrations.migrateLatest();
 
 // middlewares
@@ -68,10 +67,6 @@ bot.hears(/\/losers/, ctx => {
 
 bot.hears(/\/volume/, ctx => {
   return crypto.getCoinCapVolume(ctx);
-});
-
-bot.hears(/\/balance ([13][a-km-zA-HJ-NP-Z0-9]{26,33}$)/, ctx => {
-  return bitcoin.getBalance(ctx);
 });
 
 bot.command("coinbase", ctx => {
@@ -122,15 +117,13 @@ bot.hears(/caralho/i, ctx => {
   return sounds.getIndividualSound(ctx, 1126);
 });
 
-bot.hears(/\imgs (.+)/i, ctx => {
-  return google.asyncimgSearch(ctx, bot);
-});
+// bot.hears(/\imgs (.+)/i, ctx => {
+//   return google.asyncimgSearch(ctx, bot);
+// });
 
-bot.hears(/\img (.+)/i, (ctx) => {
+bot.hears(/\img (.+)/i, ctx => {
   return google.imgSearch(ctx);
 });
-
-
 
 bot.hears(/\/ud (.+)/i, ctx => {
   return dictionary.urbanDictionary(ctx);
@@ -167,6 +160,10 @@ bot.command("register", ctx => {
 
 bot.command("stats", ctx => {
   return user.getMostUpvotedPost(ctx);
+});
+
+bot.hears(/[13CH][a-km-zA-HJ-NP-Z0-9]{30,33}/i, ctx => {
+  return bitcoin.translateAddress(ctx);
 });
 
 bot.on("pinned_message", ctx => {
@@ -382,7 +379,6 @@ bot.action("hundred", (ctx, next) => {
     })
     .then(next);
 });
-
 
 bot.catch(err => {
   winston.log("debug", "in bot catch error");

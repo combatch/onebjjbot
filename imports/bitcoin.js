@@ -7,6 +7,8 @@ let fs = require("fs");
 let ScreenShots = require("../imports/screenshots");
 let currency = require("currency-formatter");
 
+let translate = require("npm-address-translator");
+
 const ss = new ScreenShots();
 
 /** Class representing Bitcoin. */
@@ -41,7 +43,9 @@ class Bitcoin {
       if (error) {
         return ctx.reply(`${error} error`);
       } else {
-        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${bitcoin} <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
+        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${
+          bitcoin
+        } <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
         return ctx.replyWithHTML(`${text}`, { disable_notification: true });
       }
     });
@@ -79,6 +83,27 @@ class Bitcoin {
     let caption = `btc price as of ${date}`;
 
     return ss.createScreenshot(ctx, "http://bitcoinity.org/markets", caption);
+  }
+
+  async translateAddress(ctx) {
+    let address = ctx.match[0];
+    let check = address.substring(0, 1);
+
+    if (check == "1" || check == "3") {
+      let converted = await this.convertAddress(address);
+      return ctx.replyWithHTML(`${converted}`, { disable_notification: true });
+    }
+    if (check == "C" || check == "H") {
+      let converted = await this.convertAddress(address);
+      return ctx.replyWithHTML(`${converted}`, { disable_notification: true });
+    }
+  }
+
+  convertAddress(string) {
+    let translated = translate.translateAddress(string);
+
+    let buildstring = `${string} \n\n ${translated.resultAddress}`;
+    return buildstring;
   }
 
   convertToBitcoin(ctx) {
@@ -146,12 +171,9 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(
-          `usage: convert (amount) (currency) to (currency)`,
-          {
-            disable_notification: true
-          }
-        );
+        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
+          disable_notification: true
+        });
       }
     });
   }
