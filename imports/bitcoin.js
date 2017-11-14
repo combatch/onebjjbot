@@ -130,18 +130,6 @@ class Bitcoin {
           });
         }
 
-        switch (fromCurrency) {
-          case "BCH":
-            fromCurrency = "BCC";
-            break;
-        }
-
-        switch (to) {
-          case "BCH":
-            to = "BCC";
-            break;
-        }
-
         return ctx.replyWithHTML(`${amount} ${fromCurrency} = ${price} ${to}`, {
           disable_notification: true
         });

@@ -136,22 +136,7 @@ class Crypto {
     });
   }
 
-  // test(ctx, coin) {
-  //   let options = {
-  //     method: "GET",
-  //     url: `http://coincap.io/history/1day/${coin}`,
-  //     headers: { "cache-control": "no-cache" }
-  //   };
 
-  //   request(options, function(error, response, body) {
-  //     if (error) {
-  //       winston.log("error", error);
-  //     }
-  //     let data = JSON.parse(body);
-  //     winston.log("info", data);
-
-  //   });
-  // }
 
   getBitcoinPrices(ctx) {
     let userID = ctx.message.from.id;
@@ -232,17 +217,12 @@ class Crypto {
         format: "%v"
       });
 
-      switch (bcc[0]["short"]) {
-        case "BCH":
-          bcc[0]["short"] = "BCC";
-          break;
-      }
 
       let string = `\n1 ${bcc[0][
         "short"
       ]} = <b>${bccPrice}</b>\n<i>${bccChange}%</i>\n${bccremaining} coins left\n\n1 ${btc[0][
         "short"
-      ]} = <b>${btcPrice}</b>\n<i>${btcChange}%</i>\n${btcremaining} coins left\n\n 1 BTC gets you ${ratio} BCC`;
+      ]} = <b>${btcPrice}</b>\n<i>${btcChange}%</i>\n${btcremaining} coins left\n\n 1 BTC gets you ${ratio} BCH`;
 
       return ctx.replyWithHTML(string, {});
     });
