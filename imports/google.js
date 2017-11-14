@@ -152,7 +152,7 @@ class Google {
         if (x.status !== 200) {
           return ctx.replyWithPhoto(filtered[1].url);
         } else {
-          return ctx.replyWithHTML(`error with: ${first}`);
+          return ctx.replyWithHTML(`error with: ${first.url}`);
         }
       })
       .catch(err => {
