@@ -105,9 +105,9 @@ class Google {
   async getImgResults(query) {
     return axios
       .get(
-        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis
-          .CX}&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf
-          .apis.IMAGE}`
+        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${
+          conf.apis.CX
+        }&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf.apis.IMAGE}`
       )
       .then(x => {
         return x.data;
@@ -150,9 +150,8 @@ class Google {
       .then(x => {
         console.log(x.status);
         if (x.status !== 200) {
+          ctx.replyWithHTML(`error with: ${first.url}`);
           return ctx.replyWithPhoto(filtered[1].url);
-        } else {
-          return ctx.replyWithHTML(`error with: ${first.url}`);
         }
       })
       .catch(err => {
@@ -169,9 +168,7 @@ class Google {
 
   async getGifResults(query) {
     return axios
-      .get(
-        `https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`
-      )
+      .get(`https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`)
       .then(x => {
         return x.data;
       })
