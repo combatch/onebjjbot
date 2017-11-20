@@ -72,42 +72,31 @@ class Google {
     let googleResults = await this.getImgResults(query);
     let filtered = await this.cleanImageResults(googleResults);
 
-    if (!filtered) {
-      return ctx.replyWithHTML(`no valid results found for <i>${query}</i>`, {
-        reply_to_message_id: replyTo
-      });
-    }
-
-    let newContext = await this.insertLoadingGif(ctx);
-    let gifChatId = newContext.chat.id;
-    let gifMessageId = newContext.message_id;
-
-    let first = filtered[0];
-    ctx.session.imageCache = filtered;
-
-    ctx.replyWithChatAction("upload_photo");
-
-    if (ctx.session.unUsed) {
-      if (!ctx.session.oldImage) {
-        ctx.telegram.deleteMessage(chatId, ctx.session.unUsed);
+    return ctx.replyWithMediaGroup([
+      {
+        media: "http://lorempixel.com/400/300/cats/",
+        caption: "From URL",
+        type: "photo"
+      },
+      {
+        media: "http://lorempixel.com/500/300/cats/",
+        caption: "From URL",
+        type: "photo"
+      },
+      {
+        media: { url: "http://lorempixel.com/400/200/cats/" },
+        caption: "Piped from URL",
+        type: "photo"
       }
-    }
-
-    await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
-    let job = new Job();
-    await job.createButtons(ctx, bot);
-
-    if (ctx.session.oldImage) {
-      ctx.telegram.deleteMessage(chatId, ctx.session.oldImage);
-    }
+    ]);
   }
 
   async getImgResults(query) {
     return axios
       .get(
-        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${
-          conf.apis.CX
-        }&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf.apis.IMAGE}`
+        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis
+          .CX}&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf
+          .apis.IMAGE}`
       )
       .then(x => {
         return x.data;
@@ -168,7 +157,9 @@ class Google {
 
   async getGifResults(query) {
     return axios
-      .get(`https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`)
+      .get(
+        `https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`
+      )
       .then(x => {
         return x.data;
       })

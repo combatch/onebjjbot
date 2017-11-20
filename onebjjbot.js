@@ -21,7 +21,7 @@ let env = process.env.NODE_ENV || "development";
 let tmp = path.resolve("tmp");
 
 const Telegraf = require("telegraf");
-const { Extra, memorySession, Markup } = Telegraf;
+const { Extra, session, Markup } = Telegraf;
 const bot = new Telegraf(config[`${env}`]["token"]);
 const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
@@ -39,7 +39,7 @@ const instagram = new Instagram();
 // migrations.migrateLatest();
 
 // middlewares
-bot.use(memorySession());
+bot.use(session());
 
 bot.use((ctx, next) => {
   const start = new Date();
@@ -117,9 +117,9 @@ bot.hears(/caralho/i, ctx => {
   return sounds.getIndividualSound(ctx, 1126);
 });
 
-// bot.hears(/\imgs (.+)/i, ctx => {
-//   return google.asyncimgSearch(ctx, bot);
-// });
+bot.hears(/\imgs (.+)/i, ctx => {
+  return google.asyncimgSearch(ctx, bot);
+});
 
 bot.hears(/\img (.+)/i, ctx => {
   return google.imgSearch(ctx);
