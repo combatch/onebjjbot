@@ -64,39 +64,82 @@ class Google {
     });
   }
 
-  async asyncimgSearch(ctx, bot) {
+  async asyncimgSearch(ctx) {
     let query = ctx.match[1].replace(/[?=]/g, " ");
     let replyTo = ctx.update.message.message_id;
     let chatId = ctx.update.message.chat.id;
 
+    let newContext = await this.insertLoadingGif(ctx);
+    let gifChatId = newContext.chat.id;
+    let gifMessageId = newContext.message_id;
+
+    ctx.replyWithChatAction("upload_photo");
+
     let googleResults = await this.getImgResults(query);
     let filtered = await this.cleanImageResults(googleResults);
 
-    return ctx.replyWithMediaGroup([
-      {
-        media: "http://lorempixel.com/400/300/cats/",
-        caption: "From URL",
-        type: "photo"
-      },
-      {
-        media: "http://lorempixel.com/500/300/cats/",
-        caption: "From URL",
-        type: "photo"
-      },
-      {
-        media: { url: "http://lorempixel.com/400/200/cats/" },
-        caption: "Piped from URL",
-        type: "photo"
+    let mapped = filtered.map(x => {
+      let obj = {};
+      obj["media"] = { url: x.url };
+      obj["type"] = "photo";
+      return obj;
+    });
+
+    console.log(mapped);
+    try {
+      let wait = await ctx.replyWithMediaGroup(mapped);
+      if (wait) {
+        return ctx.telegram.deleteMessage(gifChatId, gifMessageId);
       }
-    ]);
+    } catch (err) {
+      return ctx.reply(err);
+    }
+  }
+
+  async giftest(ctx) {
+    let query = ctx.match[1].replace(/[?=]/g, " ");
+    let replyTo = ctx.update.message.message_id;
+    let chatId = ctx.update.message.chat.id;
+
+    let newContext = await this.insertLoadingGif(ctx);
+    let gifChatId = newContext.chat.id;
+    let gifMessageId = newContext.message_id;
+
+    ctx.replyWithChatAction("upload_photo");
+
+    let data = await this.getGifResults(query);
+    if (data.results.length == 0) {
+      await ctx.telegram.deleteMessage(gifChatId, gifMessageId);
+      return ctx.reply(`no results found for ${query}`, {
+        reply_to_message_id: replyTo
+      });
+    }
+
+    let filtered = filterTenorResults(data);
+    filtered = filtered.slice(0, 3);
+
+    let mapped = filtered.map(x => {
+      let obj = {};
+      obj["media"] = { url: x.url };
+      obj["type"] = "video";
+      return obj;
+    });
+    try {
+      let wait = await ctx.replyWithMediaGroup(mapped);
+      if (wait) {
+        return ctx.telegram.deleteMessage(gifChatId, gifMessageId);
+      }
+    } catch (err) {
+      return ctx.reply(err);
+    }
   }
 
   async getImgResults(query) {
     return axios
       .get(
-        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis
-          .CX}&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf
-          .apis.IMAGE}`
+        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${
+          conf.apis.CX
+        }&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf.apis.IMAGE}`
       )
       .then(x => {
         return x.data;
@@ -157,9 +200,7 @@ class Google {
 
   async getGifResults(query) {
     return axios
-      .get(
-        `https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`
-      )
+      .get(`https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`)
       .then(x => {
         return x.data;
       })

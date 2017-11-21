@@ -92,6 +92,10 @@ bot.hears(/\gif (.+)/i, ctx => {
   return google.tenorSearch(ctx);
 });
 
+bot.hears(/\gifs (.+)/i, ctx => {
+  return google.giftest(ctx);
+});
+
 bot.hears(/\youtube (.+)/i, ctx => {
   return google.searchYoutube(ctx);
 });
@@ -118,7 +122,7 @@ bot.hears(/caralho/i, ctx => {
 });
 
 bot.hears(/\imgs (.+)/i, ctx => {
-  return google.asyncimgSearch(ctx, bot);
+  return google.asyncimgSearch(ctx);
 });
 
 bot.hears(/\img (.+)/i, ctx => {
