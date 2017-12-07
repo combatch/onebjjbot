@@ -7,6 +7,8 @@ let fs = require("fs");
 let ScreenShots = require("../imports/screenshots");
 let currency = require("currency-formatter");
 
+let axios = require("axios");
+
 let translate = require("npm-address-translator");
 
 const ss = new ScreenShots();
@@ -43,12 +45,49 @@ class Bitcoin {
       if (error) {
         return ctx.reply(`${error} error`);
       } else {
-        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${
-          bitcoin
-        } <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
+        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${bitcoin} <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
         return ctx.replyWithHTML(`${text}`, { disable_notification: true });
       }
     });
+  }
+
+  async getStats(ctx) {
+    let fees = await this.getFees(ctx);
+    let utxo = await this.getUnconfirmed(ctx);
+
+    let formatted = currency.format(utxo, {
+      symbol: "",
+      decimal: "",
+      thousand: ",",
+      precision: 0,
+      format: "%s%v"
+    });
+
+    let string = `${fees} satoshis/byte recommended fee.\n${formatted} unconfirmed transactions`;
+
+    return ctx.replyWithHTML(`${string}`, { disable_notification: true });
+  }
+
+  async getFees(ctx) {
+    return axios
+      .get(`https://bitcoinfees.earn.com/api/v1/fees/recommended`)
+      .then(x => {
+        return x.data.fastestFee;
+      })
+      .catch(err => {
+        winston.log("error", "failed in getFees", err);
+      });
+  }
+
+  async getUnconfirmed(ctx) {
+    return axios
+      .get(`https://blockchain.info/q/unconfirmedcount`)
+      .then(x => {
+        return x.data;
+      })
+      .catch(err => {
+        winston.log("error", "failed in getUnconfirmed", err);
+      });
   }
 
   getCoinbaseExchangeRate(ctx) {
@@ -87,22 +126,29 @@ class Bitcoin {
 
   async translateAddress(ctx) {
     let address = ctx.match[0];
-    let check = address.substring(0, 1);
+    let input = ctx.match.input;
 
-    if (check == "1" || check == "3") {
-      let converted = await this.convertAddress(address);
-      return ctx.replyWithHTML(`${converted}`, { disable_notification: true });
-    }
-    if (check == "C" || check == "H") {
-      let converted = await this.convertAddress(address);
-      return ctx.replyWithHTML(`${converted}`, { disable_notification: true });
+    if (input == address) {
+      let check = address.substring(0, 1);
+
+      if (check == "1" || check == "3") {
+        let string = await this.convertAddress(address);
+        return ctx.replyWithHTML(`${string}`, {
+          disable_notification: true
+        });
+      }
+      if (check == "C" || check == "H") {
+        let string = await this.convertAddress(address);
+        return ctx.replyWithHTML(`${string}`, {
+          disable_notification: true
+        });
+      }
     }
   }
 
   convertAddress(string) {
-    let translated = translate.translateAddress(string);
-
-    let buildstring = `${string} \n\n ${translated.resultAddress}`;
+    let t = translate.translateAddress(string);
+    let buildstring = `${t.origCoin} Address\n${string}\n\n${t.resultCoin} Address\n${t.resultAddress}`;
     return buildstring;
   }
 
@@ -159,9 +205,12 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `usage: convert (amount) (currency) to (currency)`,
+          {
+            disable_notification: true
+          }
+        );
       }
     });
   }

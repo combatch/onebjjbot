@@ -88,6 +88,10 @@ bot.hears(/\/chart/i, ctx => {
   return bitcoin.getBitcoinityChart(ctx);
 });
 
+bot.hears(/\/fees/i, ctx => {
+  return bitcoin.getStats(ctx);
+});
+
 bot.hears(/\gif (.+)/i, ctx => {
   return google.tenorSearch(ctx);
 });
