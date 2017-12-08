@@ -92,7 +92,8 @@ class Bitcoin {
     return axios
       .get(`https://blockchain.info/q/unconfirmedcount`)
       .then(x => {
-        return x.data;
+        let unconfirmed = x.data + 47000; //adjust for discrepency
+        return unconfirmed;
       })
       .catch(err => {
         winston.log("error", "failed in getUnconfirmed", err);
