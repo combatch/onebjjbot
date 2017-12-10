@@ -137,9 +137,9 @@ bot.hears(/\/ud (.+)/i, ctx => {
   return dictionary.urbanDictionary(ctx);
 });
 
-bot.hears(/\ig (.+)/i, ctx => {
-  return instagram.handleIG(ctx);
-});
+// bot.hears(/\ig (.+)/i, ctx => {
+//   return instagram.handleIG(ctx);
+// });
 
 bot.hears(/\/define (.+)/i, ctx => {
   return dictionary.pearsonDictionary(ctx);

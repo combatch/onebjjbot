@@ -122,15 +122,22 @@ class Bitcoin {
     });
   }
 
-  getBitcoinityChart(ctx) {
+  async getBitcoinityChart(ctx) {
     let date = new Date()
       .toString()
       .split(" ")
       .splice(1, 3)
       .join(" ");
     let caption = `btc price as of ${date}`;
+    let bchcaption = `BCH price as of ${date}`;
 
-    return ss.createScreenshot(ctx, "http://bitcoinity.org/markets", caption);
+    await ss.createScreenshot(ctx, "http://bitcoinity.org/markets", caption);
+    await ss.createScreenshot(
+      ctx,
+      "https://bittrex.com/market/MarketStandardChart?marketName=USDT-BCC",
+      bchcaption
+    );
+    return;
   }
 
   async translateAddress(ctx) {
