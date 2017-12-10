@@ -45,7 +45,9 @@ class Bitcoin {
       if (error) {
         return ctx.reply(`${error} error`);
       } else {
-        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${bitcoin} <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
+        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${
+          bitcoin
+        } <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
         return ctx.replyWithHTML(`${text}`, { disable_notification: true });
       }
     });
@@ -55,6 +57,11 @@ class Bitcoin {
     let fees = await this.getFees(ctx);
     let utxo = await this.getUnconfirmed(ctx);
 
+    let est = 250 * fees / 100000000;
+
+    let estimated = await this.modularConvert("BTC", "USD", est);
+    estimated = this.formatPrice(estimated);
+
     let formatted = currency.format(utxo, {
       symbol: "",
       decimal: "",
@@ -63,7 +70,9 @@ class Bitcoin {
       format: "%s%v"
     });
 
-    let string = `${fees} satoshis/byte recommended fee.\n${formatted} unconfirmed transactions`;
+    let string = `<b>${fees}</b> satoshis/byte recommended fee.\nestimated <b>${
+      estimated
+    }</b> fee for a regular tx.\n<b>${formatted}</b> unconfirmed transactions`;
 
     return ctx.replyWithHTML(`${string}`, { disable_notification: true });
   }
@@ -148,10 +157,38 @@ class Bitcoin {
 
   convertAddress(string) {
     let t = translate.translateAddress(string);
-    let buildstring = `${t.origCoin} Address\n${string}\n\n${t.resultCoin} Address\n${t.resultAddress}`;
+    let buildstring = `${t.origCoin} Address\n${string}\n\n${t.resultCoin} Address\n${
+      t.resultAddress
+    }`;
     return buildstring;
   }
 
+  modularConvert(fromCurrency, to, amount) {
+    return axios
+      .get(`https://apiv2.bitcoinaverage.com/convert/global`, {
+        params: {
+          from: fromCurrency,
+          to: to,
+          amount: amount
+        }
+      })
+      .then(x => {
+        return x.data.price;
+      })
+      .catch(err => {
+        winston.log("error", "failed in modularConvert", err);
+      });
+  }
+
+  formatPrice(x) {
+    return currency.format(x, {
+      symbol: "$",
+      decimal: ".",
+      thousand: ",",
+      precision: 2,
+      format: "%s%v"
+    });
+  }
   convertToBitcoin(ctx) {
     let amount = ctx.match[1].replace(/\s+/, "");
     amount = Number(amount.replace(/[^0-9\.]+/g, ""));
@@ -177,18 +214,16 @@ class Bitcoin {
     };
 
     request(options, function(error, response, body) {
+      console.log(response);
+
       if (response.statusCode == "200") {
         let data = JSON.parse(body);
+        console.log(data);
+
         let price;
 
         if (fromCurrency == "BTC" || fromCurrency == "BCH") {
-          price = currency.format(data.price, {
-            symbol: "$",
-            decimal: ".",
-            thousand: ",",
-            precision: 2,
-            format: "%s%v"
-          });
+          price = this.formatPrice(data.price);
         } else {
           price = data.price;
 
@@ -205,12 +240,9 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(
-          `usage: convert (amount) (currency) to (currency)`,
-          {
-            disable_notification: true
-          }
-        );
+        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
+          disable_notification: true
+        });
       }
     });
   }
