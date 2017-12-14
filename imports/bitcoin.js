@@ -45,9 +45,7 @@ class Bitcoin {
       if (error) {
         return ctx.reply(`${error} error`);
       } else {
-        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${
-          bitcoin
-        } <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
+        let text = `<i>Balance</i> \n${satoshis} <strong>satoshis</strong> \n${bitcoin} <strong> BTC </strong>\n\nView transactions: https://blockchain.info/address/${address}`;
         return ctx.replyWithHTML(`${text}`, { disable_notification: true });
       }
     });
@@ -70,9 +68,7 @@ class Bitcoin {
       format: "%s%v"
     });
 
-    let string = `<b>${fees}</b> satoshis/byte recommended fee.\nestimated <b>${
-      estimated
-    }</b> fee for a regular tx.\n<b>${formatted}</b> unconfirmed transactions`;
+    let string = `<b>${fees}</b> satoshis/byte recommended fee.\nestimated <b>${estimated}</b> fee for a regular tx.\n<b>${formatted}</b> unconfirmed transactions`;
 
     return ctx.replyWithHTML(`${string}`, { disable_notification: true });
   }
@@ -149,13 +145,13 @@ class Bitcoin {
       let check = address.substring(0, 1);
 
       if (check == "1" || check == "3") {
-        let string = await this.convertAddress(address);
+        let string = await this.convertAddress(ctx, address);
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
       }
       if (check == "C" || check == "H") {
-        let string = await this.convertAddress(address);
+        let string = await this.convertAddress(ctx, address);
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
@@ -163,11 +159,16 @@ class Bitcoin {
     }
   }
 
-  convertAddress(string) {
+  async convertAddress(ctx, string) {
     let t = translate.translateAddress(string);
-    let buildstring = `${t.origCoin} Address\n${string}\n\n${t.resultCoin} Address\n${
-      t.resultAddress
-    }`;
+    // let buildstring = `${t.origCoin} Address\n${string}\n\n${t.resultCoin} Address\n${t.resultAddress}`;
+    let intstructions = `Use this Address translation below. The address beginning with <i>1</i> or <i>3</i> will work everywhere`;
+
+    await ctx.replyWithHTML(`${intstructions}`, {
+      disable_notification: true
+    });
+
+    let buildstring = `<b>${t.resultAddress}</b>`;
     return buildstring;
   }
 
@@ -188,15 +189,6 @@ class Bitcoin {
       });
   }
 
-  formatPrice(x) {
-    return currency.format(x, {
-      symbol: "$",
-      decimal: ".",
-      thousand: ",",
-      precision: 2,
-      format: "%s%v"
-    });
-  }
   convertToBitcoin(ctx) {
     let amount = ctx.match[1].replace(/\s+/, "");
     amount = Number(amount.replace(/[^0-9\.]+/g, ""));
@@ -222,20 +214,22 @@ class Bitcoin {
     };
 
     request(options, function(error, response, body) {
-      console.log(response);
-
       if (response.statusCode == "200") {
         let data = JSON.parse(body);
-        console.log(data);
 
-        let price;
+        let price = data.price;
 
-        if (fromCurrency == "BTC" || fromCurrency == "BCH") {
-          price = this.formatPrice(data.price);
-        } else {
-          price = data.price;
-
+        if (fromCurrency == "USD") {
           amount = currency.format(amount, {
+            symbol: "$",
+            decimal: ".",
+            thousand: ",",
+            precision: 2,
+            format: "%s%v"
+          });
+        }
+        if (to == "USD") {
+          price = currency.format(price, {
             symbol: "$",
             decimal: ".",
             thousand: ",",
@@ -248,11 +242,26 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `usage: convert (amount) (currency) to (currency)`,
+          {
+            disable_notification: true
+          }
+        );
       }
     });
+  }
+
+  formatPrice(x) {
+    let price = currency.format(x, {
+      symbol: "$",
+      decimal: ".",
+      thousand: ",",
+      precision: 2,
+      format: "%s%v"
+    });
+
+    return price;
   }
 }
 
