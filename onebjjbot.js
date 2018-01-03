@@ -173,6 +173,9 @@ bot.command("stats", ctx => {
 bot.hears(/[13CH][a-km-zA-HJ-NP-Z0-9]{30,33}/i, ctx => {
   return bitcoin.translateAddress(ctx);
 });
+bot.hears(/bitcoincash:.*/gi, ctx => {
+  return bitcoin.translateAddress(ctx);
+});
 
 bot.on("pinned_message", ctx => {
   let p = Promise.resolve(user.checkStickyId(ctx));

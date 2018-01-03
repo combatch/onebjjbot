@@ -10,6 +10,7 @@ let currency = require("currency-formatter");
 let axios = require("axios");
 
 let translate = require("npm-address-translator");
+const bitcoinCash = require("bitcoincashjs");
 
 const ss = new ScreenShots();
 
@@ -139,19 +140,29 @@ class Bitcoin {
 
   async translateAddress(ctx) {
     let address = ctx.match[0];
+
+    if (ctx.match["index"] <= 20 && ctx.match["index"] >= 12) {
+      address = ctx.match.input;
+    }
     let input = ctx.match.input;
 
     if (input == address) {
       let check = address.substring(0, 1);
 
       if (check == "1" || check == "3") {
-        let string = await this.convertAddress(ctx, address);
+        let string = await this.convertAddress(ctx, address, "legacy");
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
       }
       if (check == "C" || check == "H") {
-        let string = await this.convertAddress(ctx, address);
+        let string = await this.convertAddress(ctx, address, "bitpay");
+        return ctx.replyWithHTML(`${string}`, {
+          disable_notification: true
+        });
+      }
+      if (check == "b" || check == "B") {
+        let string = await this.convertAddress(ctx, address, "cash");
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
@@ -159,17 +170,60 @@ class Bitcoin {
     }
   }
 
-  async convertAddress(ctx, string) {
-    let t = translate.translateAddress(string);
-    // let buildstring = `${t.origCoin} Address\n${string}\n\n${t.resultCoin} Address\n${t.resultAddress}`;
-    let intstructions = `Use this Address translation below. The address beginning with <i>1</i> or <i>3</i> will work everywhere`;
+  async convertAddress(ctx, string, type) {
+    const Address = bitcoinCash.Address;
+    const BitpayFormat = Address.BitpayFormat;
+    const CashAddrFormat = Address.CashAddrFormat;
+    let address;
 
-    await ctx.replyWithHTML(`${intstructions}`, {
-      disable_notification: true
-    });
+    try {
+      if (type == "bitpay") {
+        let t = translate.translateAddress(string);
+        let bch = t.resultAddress;
 
-    let buildstring = `<b>${t.resultAddress}</b>`;
-    return buildstring;
+        address = new Address(bch);
+      } else if (type == "cash") {
+        let translated;
+        let check = string.charAt(12);
+
+        if (check == "p") {
+          let pubscripthash = Address.fromString(string, "mainnet", "scripthash", CashAddrFormat);
+          translated = pubscripthash.toString();
+        } else if (check == "q") {
+          let cashaddr = Address.fromString(string, "mainnet", "pubkeyhash", CashAddrFormat);
+          translated = cashaddr.toString();
+        }
+
+        address = new Address(translated);
+      } else {
+        address = new Address(string);
+      }
+
+      let legacy = address.toString();
+      let bitpay = address.toString(BitpayFormat);
+      let cash = address.toString(CashAddrFormat);
+
+      let buildstring;
+
+      let instructions = `Use this Address translation below. The address beginning with <i>1</i> or <i>3</i> will work everywhere`;
+
+      await ctx.replyWithHTML(`${instructions}`, {
+        disable_notification: true
+      });
+      if (string == legacy) {
+        buildstring = `<b>${cash}</b>`;
+      }
+      if (string == bitpay) {
+        buildstring = `<b>${cash}</b>`;
+      }
+      if (string == cash) {
+        buildstring = `<b>${legacy}</b>`;
+      }
+      return buildstring;
+    } catch (e) {
+      console.log(e, typeof e);
+      return ctx.replyWithHTML(`error: ${e.Error}`);
+    }
   }
 
   modularConvert(fromCurrency, to, amount) {
@@ -242,12 +296,9 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(
-          `usage: convert (amount) (currency) to (currency)`,
-          {
-            disable_notification: true
-          }
-        );
+        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
+          disable_notification: true
+        });
       }
     });
   }
