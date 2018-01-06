@@ -248,14 +248,26 @@ class Bitcoin {
     amount = Number(amount.replace(/[^0-9\.]+/g, ""));
     let fromCurrency = ctx.match[2].replace(/\s+/, "").toUpperCase();
     let to = ctx.match[4].replace(/\s+/, "").toUpperCase();
+    let bits;
 
     switch (fromCurrency) {
       case "BCC":
         fromCurrency = "BCH";
+      case "BITS":
+        bits = true;
+        fromCurrency = "BCH";
         break;
     }
+
     switch (to) {
       case "BCC":
+        to = "BCH";
+      case "BITS":
+        bits = true;
+        to = "BCH";
+        break;
+      case "BIT":
+        bits = true;
         to = "BCH";
         break;
     }
@@ -281,7 +293,16 @@ class Bitcoin {
             precision: 2,
             format: "%s%v"
           });
+        } else {
+          amount = currency.format(amount, {
+            symbol: "",
+            decimal: "",
+            thousand: ",",
+            precision: 0,
+            format: "%s%v"
+          });
         }
+
         if (to == "USD") {
           price = currency.format(price, {
             symbol: "$",
@@ -290,6 +311,41 @@ class Bitcoin {
             precision: 2,
             format: "%s%v"
           });
+        }
+
+        if (bits) {
+          switch (fromCurrency) {
+            case "BCH":
+              fromCurrency = "bits";
+              break;
+          }
+          switch (to) {
+            case "BCH":
+              to = "bits";
+              break;
+          }
+
+          if (fromCurrency == "USD") {
+            let bits = data.price * 1000000;
+
+            price = currency.format(bits, {
+              symbol: "",
+              decimal: "",
+              thousand: ",",
+              precision: 0,
+              format: "%s%v"
+            });
+          } else {
+            let bits = data.price / 1000000;
+
+            price = currency.format(bits, {
+              symbol: "$",
+              decimal: ".",
+              thousand: ",",
+              precision: 2,
+              format: "%s%v"
+            });
+          }
         }
 
         return ctx.replyWithHTML(`${amount} ${fromCurrency} = ${price} ${to}`, {
