@@ -285,6 +285,8 @@ class Bitcoin {
 
         let price = data.price;
 
+        console.log("amount", amount);
+
         if (fromCurrency == "USD") {
           amount = currency.format(amount, {
             symbol: "$",
@@ -293,15 +295,17 @@ class Bitcoin {
             precision: 2,
             format: "%s%v"
           });
-        } else {
-          amount = currency.format(amount, {
-            symbol: "",
-            decimal: "",
-            thousand: ",",
-            precision: 0,
-            format: "%s%v"
-          });
         }
+
+        // else {
+        //   amount = currency.format(amount, {
+        //     symbol: "",
+        //     decimal: ".",
+        //     thousand: ",",
+        //     precision: 0,
+        //     format: "%s%v"
+        //   });
+        // }
 
         if (to == "USD") {
           price = currency.format(price, {
@@ -312,6 +316,8 @@ class Bitcoin {
             format: "%s%v"
           });
         }
+
+        console.log("amount", amount);
 
         if (bits) {
           switch (fromCurrency) {
