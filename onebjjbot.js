@@ -1,28 +1,28 @@
-let config = require("./config/config");
-let winston = require("./middleware/winston");
-let Complex = require("./middleware/complexMiddleWare");
-let Stocks = require("./middleware/stockMiddleware");
-let Knex = require("./imports/knex");
-let ScreenShots = require("./imports/screenshots");
-let Users = require("./imports/users");
-let Vote = require("./imports/vote");
-let Google = require("./imports/google");
-let Bitcoin = require("./imports/bitcoin");
-let Crypto = require("./imports/crypto");
-let Sounds = require("./imports/sounds");
-let Files = require("./imports/fileStreams");
-let Dictionary = require("./imports/dictionary");
-let Job = require("./imports/jobs");
-let Instagram = require("./imports/instagram");
-let path = require("path");
-let _ = require("lodash");
+let config = require('./config/config');
+let winston = require('./middleware/winston');
+let Complex = require('./middleware/complexMiddleWare');
+let Stocks = require('./middleware/stockMiddleware');
+let Knex = require('./imports/knex');
+let ScreenShots = require('./imports/screenshots');
+let Users = require('./imports/users');
+let Vote = require('./imports/vote');
+let Google = require('./imports/google');
+let Bitcoin = require('./imports/bitcoin');
+let Crypto = require('./imports/crypto');
+let Sounds = require('./imports/sounds');
+let Files = require('./imports/fileStreams');
+let Dictionary = require('./imports/dictionary');
+let Job = require('./imports/jobs');
+let Instagram = require('./imports/instagram');
+let path = require('path');
+let _ = require('lodash');
 
-let env = process.env.NODE_ENV || "development";
-let tmp = path.resolve("tmp");
+let env = process.env.NODE_ENV || 'development';
+let tmp = path.resolve('tmp');
 
-const Telegraf = require("telegraf");
+const Telegraf = require('telegraf');
 const { Extra, session, Markup } = Telegraf;
-const bot = new Telegraf(config[`${env}`]["token"]);
+const bot = new Telegraf(config[`${env}`]['token']);
 const complexMiddleWare = new Complex();
 const stocksMiddleware = new Stocks();
 //const migrations = new Knex();
@@ -45,7 +45,7 @@ bot.use((ctx, next) => {
   const start = new Date();
   return next().then(() => {
     const ms = new Date() - start;
-    console.log("response time %sms", ms);
+    console.log('response time %sms', ms);
   });
 });
 
@@ -69,11 +69,11 @@ bot.hears(/\/volume/, ctx => {
   return crypto.getCoinCapVolume(ctx);
 });
 
-bot.command("coinbase", ctx => {
+bot.command('coinbase', ctx => {
   return bitcoin.getCoinbaseExchangeRate(ctx);
 });
 
-bot.command("sounds", ctx => {
+bot.command('sounds', ctx => {
   return sounds.returnMenu(ctx);
 });
 
@@ -149,24 +149,26 @@ bot.hears(/translate (.+)/i, ctx => {
   if (ctx.message.reply_to_message) {
     google.translate(ctx);
   } else {
-    return ctx.reply('usage: reply to a message with "translate <foreignlanguage>"');
+    return ctx.reply(
+      'usage: reply to a message with "translate <foreignlanguage>"'
+    );
   }
 });
 
 bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, ctx => {
-  winston.log("debug", "symbol: " + ctx.match[1]);
+  winston.log('debug', 'symbol: ' + ctx.match[1]);
 });
 
 bot.hears(/\/ss (.+)/, ctx => {
   const ss = new ScreenShots();
-  return ss.createScreenshot(ctx, "");
+  return ss.createScreenshot(ctx, '');
 });
 
-bot.command("register", ctx => {
+bot.command('register', ctx => {
   return user.registerUser(ctx);
 });
 
-bot.command("stats", ctx => {
+bot.command('stats', ctx => {
   return user.getMostUpvotedPost(ctx);
 });
 
@@ -177,7 +179,11 @@ bot.hears(/bitcoincash:.*/gi, ctx => {
   return bitcoin.translateAddress(ctx);
 });
 
-bot.on("pinned_message", ctx => {
+bot.hears(/[pq].{38,48}/gi, ctx => {
+  return bitcoin.translateAddress(ctx, true);
+});
+
+bot.on('pinned_message', ctx => {
   let p = Promise.resolve(user.checkStickyId(ctx));
   p.then(exists => {
     if (exists) {
@@ -188,7 +194,7 @@ bot.on("pinned_message", ctx => {
   });
 });
 
-bot.on("migrate_from_chat_id", ctx => {
+bot.on('migrate_from_chat_id', ctx => {
   let oldID = ctx.update.message.migrate_from_chat_id;
   let newID = ctx.update.message.chat.id;
 
@@ -198,15 +204,15 @@ bot.on("migrate_from_chat_id", ctx => {
   });
 });
 
-bot.on(["video", "document"], ctx => {
+bot.on(['video', 'document'], ctx => {
   return file.convertToMp4(ctx);
 });
 
-bot.command("leaderboard", ctx => {
+bot.command('leaderboard', ctx => {
   let p = Promise.resolve(user.getStickiedMessageId(ctx));
   p.then(messageId => {
     if (_.isUndefined(messageId)) {
-      winston.log("info", "no pinned message, posting leaderboard");
+      winston.log('info', 'no pinned message, posting leaderboard');
       return user.getLeaderboard(ctx);
     } else {
       return user.getLeaderboard(ctx, messageId);
@@ -215,21 +221,21 @@ bot.command("leaderboard", ctx => {
 });
 
 // if replying with emoji, auto increment
-bot.on("message", ctx => {
-  let savage = "savage";
-  let savageRegEx = new RegExp(savage, "ig");
-  let lul = "lul";
-  let lulRegEx = new RegExp(lul, "ig");
+bot.on('message', ctx => {
+  let savage = 'savage';
+  let savageRegEx = new RegExp(savage, 'ig');
+  let lul = 'lul';
+  let lulRegEx = new RegExp(lul, 'ig');
   //let lol = "l+o+l";
-  let lol = "(?:^|W)lol(?:$|W)";
-  let lolRegEx = new RegExp(lol, "i");
+  let lol = '(?:^|W)lol(?:$|W)';
+  let lolRegEx = new RegExp(lol, 'i');
   //let lolRegEx = new RegExp(lol, "ig");
-  let upvote = "upvote";
-  let upvoteRegEx = new RegExp(upvote, "ig");
-  let lmao = "l+m+a+o+";
-  let lmaoRegEx = new RegExp(lmao, "ig");
-  let haha = "h+a+h+";
-  let hahaRegEx = new RegExp(haha, "ig");
+  let upvote = 'upvote';
+  let upvoteRegEx = new RegExp(upvote, 'ig');
+  let lmao = 'l+m+a+o+';
+  let lmaoRegEx = new RegExp(lmao, 'ig');
+  let haha = 'h+a+h+';
+  let hahaRegEx = new RegExp(haha, 'ig');
 
   if (ctx.message.reply_to_message) {
     // if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == 'savage' || ctx.message.text == '😂') {
@@ -239,7 +245,7 @@ bot.on("message", ctx => {
       upvoteRegEx.test(ctx.message.text) ||
       lmaoRegEx.test(ctx.message.text) ||
       savageRegEx.test(ctx.message.text) ||
-      ctx.message.text == "😂"
+      ctx.message.text == '😂'
     ) {
       let userId = ctx.from.id;
       let replyTo = ctx.message.reply_to_message.from.id;
@@ -247,22 +253,22 @@ bot.on("message", ctx => {
 
       if (replyTo !== bot.options.id) {
         if (userId == replyTo) {
-          return ctx.reply("cant vote for yourself");
+          return ctx.reply('cant vote for yourself');
         }
 
         return ctx.reply(
-          "<i>choose a button to upvote</i>",
+          '<i>choose a button to upvote</i>',
           Extra.inReplyTo(originalMessageId)
             .notifications(false)
             .HTML()
             .markup(
               Markup.inlineKeyboard([
-                Markup.callbackButton("😂", "tearsofjoy"),
-                Markup.callbackButton("👍", "thumbsup"),
-                Markup.callbackButton("❤", "heart"),
-                Markup.callbackButton("🔥", "fire"),
+                Markup.callbackButton('😂', 'tearsofjoy'),
+                Markup.callbackButton('👍', 'thumbsup'),
+                Markup.callbackButton('❤', 'heart'),
+                Markup.callbackButton('🔥', 'fire'),
                 // Markup.callbackButton('👏', 'clap'),
-                Markup.callbackButton("💯", "hundred")
+                Markup.callbackButton('💯', 'hundred')
               ])
             )
         );
@@ -271,13 +277,13 @@ bot.on("message", ctx => {
   }
 });
 
-bot.action("tearsofjoy", (ctx, next) => {
+bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
   let title = ctx.update.callback_query.message.chat.title;
 
   return ctx
-    .answerCallbackQuery("selected 😂")
+    .answerCallbackQuery('selected 😂')
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
@@ -291,13 +297,13 @@ bot.action("tearsofjoy", (ctx, next) => {
     })
     .then(next);
 });
-bot.action("thumbsup", (ctx, next) => {
+bot.action('thumbsup', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
   let title = ctx.update.callback_query.message.chat.title;
 
   return ctx
-    .answerCallbackQuery("selected 👍")
+    .answerCallbackQuery('selected 👍')
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
@@ -311,13 +317,13 @@ bot.action("thumbsup", (ctx, next) => {
     })
     .then(next);
 });
-bot.action("heart", (ctx, next) => {
+bot.action('heart', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
   let title = ctx.update.callback_query.message.chat.title;
 
   return ctx
-    .answerCallbackQuery("selected ❤")
+    .answerCallbackQuery('selected ❤')
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
@@ -331,13 +337,13 @@ bot.action("heart", (ctx, next) => {
     })
     .then(next);
 });
-bot.action("fire", (ctx, next) => {
+bot.action('fire', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
   let title = ctx.update.callback_query.message.chat.title;
 
   return ctx
-    .answerCallbackQuery("selected 🔥")
+    .answerCallbackQuery('selected 🔥')
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
@@ -370,13 +376,13 @@ bot.action("fire", (ctx, next) => {
 //     })
 //     .then(next);
 // });
-bot.action("hundred", (ctx, next) => {
+bot.action('hundred', (ctx, next) => {
   let data = ctx.update.callback_query.data;
   let group = ctx.update.callback_query.message.chat.id;
   let title = ctx.update.callback_query.message.chat.title;
 
   return ctx
-    .answerCallbackQuery("selected 💯")
+    .answerCallbackQuery('selected 💯')
     .then(() => {
       return user.castVote(ctx, bot.options.username);
     })
@@ -392,8 +398,8 @@ bot.action("hundred", (ctx, next) => {
 });
 
 bot.catch(err => {
-  winston.log("debug", "in bot catch error");
-  winston.log("error", err);
+  winston.log('debug', 'in bot catch error');
+  winston.log('error', err);
 });
 
 bot.startPolling();

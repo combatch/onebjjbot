@@ -1,16 +1,16 @@
-let path = require("path");
-let winston = require("winston");
-let conf = require("../config/config.js");
-let _ = require("lodash");
-let request = require("request");
-let fs = require("fs");
-let ScreenShots = require("../imports/screenshots");
-let currency = require("currency-formatter");
+let path = require('path');
+let winston = require('winston');
+let conf = require('../config/config.js');
+let _ = require('lodash');
+let request = require('request');
+let fs = require('fs');
+let ScreenShots = require('../imports/screenshots');
+let currency = require('currency-formatter');
 
-let axios = require("axios");
+let axios = require('axios');
 
-let translate = require("npm-address-translator");
-const bitcoinCash = require("bitcoincashjs");
+let translate = require('npm-address-translator');
+const bitcoinCash = require('bitcoincashjs');
 
 const ss = new ScreenShots();
 
@@ -30,14 +30,14 @@ class Bitcoin {
     let replyTo = ctx.update.message.message_id;
 
     let options = {
-      method: "GET",
-      url: "https://blockchain.info/address/" + address + "?format=json",
-      headers: { "cache-control": "no-cache" }
+      method: 'GET',
+      url: 'https://blockchain.info/address/' + address + '?format=json',
+      headers: { 'cache-control': 'no-cache' }
     };
 
     request(options, function(error, response, body) {
       if (error) {
-        console.log("debug", error);
+        console.log('debug', error);
       }
       let data = JSON.parse(body);
       let satoshis = data.final_balance;
@@ -58,15 +58,15 @@ class Bitcoin {
 
     let est = 250 * fees / 100000000;
 
-    let estimated = await this.modularConvert("BTC", "USD", est);
+    let estimated = await this.modularConvert('BTC', 'USD', est);
     estimated = this.formatPrice(estimated);
 
     let formatted = currency.format(utxo, {
-      symbol: "",
-      decimal: "",
-      thousand: ",",
+      symbol: '',
+      decimal: '',
+      thousand: ',',
       precision: 0,
-      format: "%s%v"
+      format: '%s%v'
     });
 
     let string = `<b>${fees}</b> satoshis/byte recommended fee.\nestimated <b>${estimated}</b> fee for a regular tx.\n<b>${formatted}</b> unconfirmed transactions`;
@@ -81,7 +81,7 @@ class Bitcoin {
         return x.data.fastestFee;
       })
       .catch(err => {
-        winston.log("error", "failed in getFees", err);
+        winston.log('error', 'failed in getFees', err);
       });
   }
 
@@ -93,20 +93,20 @@ class Bitcoin {
         return unconfirmed;
       })
       .catch(err => {
-        winston.log("error", "failed in getUnconfirmed", err);
+        winston.log('error', 'failed in getUnconfirmed', err);
       });
   }
 
   getCoinbaseExchangeRate(ctx) {
     let options = {
-      method: "GET",
-      url: "https://api.coinbase.com/v2/exchange-rates?currency=BTC",
-      headers: { "cache-control": "no-cache" }
+      method: 'GET',
+      url: 'https://api.coinbase.com/v2/exchange-rates?currency=BTC',
+      headers: { 'cache-control': 'no-cache' }
     };
 
     request(options, function(error, response, body) {
       if (error) {
-        console.log("debug", error);
+        console.log('debug', error);
       }
       let data = JSON.parse(body);
       let USD = data.data.rates.USD;
@@ -123,46 +123,51 @@ class Bitcoin {
   async getBitcoinityChart(ctx) {
     let date = new Date()
       .toString()
-      .split(" ")
+      .split(' ')
       .splice(1, 3)
-      .join(" ");
+      .join(' ');
     let caption = `btc price as of ${date}`;
     let bchcaption = `BCH price as of ${date}`;
 
-    await ss.createScreenshot(ctx, "http://bitcoinity.org/markets", caption);
+    await ss.createScreenshot(ctx, 'http://bitcoinity.org/markets', caption);
     await ss.createScreenshot(
       ctx,
-      "https://bittrex.com/market/MarketStandardChart?marketName=USDT-BCC",
+      'https://bittrex.com/market/MarketStandardChart?marketName=USDT-BCC',
       bchcaption
     );
     return;
   }
 
-  async translateAddress(ctx) {
+  async translateAddress(ctx, noprefix = false) {
     let address = ctx.match[0];
+    let input;
 
-    if (ctx.match["index"] <= 20 && ctx.match["index"] >= 12) {
+    if (ctx.match['index'] <= 20 && ctx.match['index'] >= 12) {
       address = ctx.match.input;
     }
-    let input = ctx.match.input;
+    input = ctx.match.input;
+    if (noprefix) {
+      address = `bitcoincash:${address}`;
+      input = address;
+    }
 
     if (input == address) {
       let check = address.substring(0, 1);
 
-      if (check == "1" || check == "3") {
-        let string = await this.convertAddress(ctx, address, "legacy");
+      if (check == '1' || check == '3') {
+        let string = await this.convertAddress(ctx, address, 'legacy');
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
       }
-      if (check == "C" || check == "H") {
-        let string = await this.convertAddress(ctx, address, "bitpay");
+      if (check == 'C' || check == 'H') {
+        let string = await this.convertAddress(ctx, address, 'bitpay');
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
       }
-      if (check == "b" || check == "B") {
-        let string = await this.convertAddress(ctx, address, "cash");
+      if (check == 'b' || check == 'B') {
+        let string = await this.convertAddress(ctx, address, 'cash');
         return ctx.replyWithHTML(`${string}`, {
           disable_notification: true
         });
@@ -177,20 +182,30 @@ class Bitcoin {
     let address;
 
     try {
-      if (type == "bitpay") {
+      if (type == 'bitpay') {
         let t = translate.translateAddress(string);
         let bch = t.resultAddress;
 
         address = new Address(bch);
-      } else if (type == "cash") {
+      } else if (type == 'cash') {
         let translated;
         let check = string.charAt(12);
 
-        if (check == "p") {
-          let pubscripthash = Address.fromString(string, "mainnet", "scripthash", CashAddrFormat);
+        if (check == 'p') {
+          let pubscripthash = Address.fromString(
+            string,
+            'mainnet',
+            'scripthash',
+            CashAddrFormat
+          );
           translated = pubscripthash.toString();
-        } else if (check == "q") {
-          let cashaddr = Address.fromString(string, "mainnet", "pubkeyhash", CashAddrFormat);
+        } else if (check == 'q') {
+          let cashaddr = Address.fromString(
+            string,
+            'mainnet',
+            'pubkeyhash',
+            CashAddrFormat
+          );
           translated = cashaddr.toString();
         }
 
@@ -239,61 +254,61 @@ class Bitcoin {
         return x.data.price;
       })
       .catch(err => {
-        winston.log("error", "failed in modularConvert", err);
+        winston.log('error', 'failed in modularConvert', err);
       });
   }
 
   convertToBitcoin(ctx) {
-    let amount = ctx.match[1].replace(/\s+/, "");
-    amount = Number(amount.replace(/[^0-9\.]+/g, ""));
-    let fromCurrency = ctx.match[2].replace(/\s+/, "").toUpperCase();
-    let to = ctx.match[4].replace(/\s+/, "").toUpperCase();
+    let amount = ctx.match[1].replace(/\s+/, '');
+    amount = Number(amount.replace(/[^0-9\.]+/g, ''));
+    let fromCurrency = ctx.match[2].replace(/\s+/, '').toUpperCase();
+    let to = ctx.match[4].replace(/\s+/, '').toUpperCase();
     let bits;
 
     switch (fromCurrency) {
-      case "BCC":
-        fromCurrency = "BCH";
-      case "BITS":
+      case 'BCC':
+        fromCurrency = 'BCH';
+      case 'BITS':
         bits = true;
-        fromCurrency = "BCH";
+        fromCurrency = 'BCH';
         break;
     }
 
     switch (to) {
-      case "BCC":
-        to = "BCH";
-      case "BITS":
+      case 'BCC':
+        to = 'BCH';
+      case 'BITS':
         bits = true;
-        to = "BCH";
+        to = 'BCH';
         break;
-      case "BIT":
+      case 'BIT':
         bits = true;
-        to = "BCH";
+        to = 'BCH';
         break;
     }
 
     let options = {
-      method: "GET",
-      url: "https://apiv2.bitcoinaverage.com/convert/global",
+      method: 'GET',
+      url: 'https://apiv2.bitcoinaverage.com/convert/global',
       qs: { from: fromCurrency, to: to, amount: amount },
-      headers: { "cache-control": "no-cache" }
+      headers: { 'cache-control': 'no-cache' }
     };
 
     request(options, function(error, response, body) {
-      if (response.statusCode == "200") {
+      if (response.statusCode == '200') {
         let data = JSON.parse(body);
 
         let price = data.price;
 
-        console.log("amount", amount);
+        console.log('amount', amount);
 
-        if (fromCurrency == "USD") {
+        if (fromCurrency == 'USD') {
           amount = currency.format(amount, {
-            symbol: "$",
-            decimal: ".",
-            thousand: ",",
+            symbol: '$',
+            decimal: '.',
+            thousand: ',',
             precision: 2,
-            format: "%s%v"
+            format: '%s%v'
           });
         }
 
@@ -307,49 +322,49 @@ class Bitcoin {
         //   });
         // }
 
-        if (to == "USD") {
+        if (to == 'USD') {
           price = currency.format(price, {
-            symbol: "$",
-            decimal: ".",
-            thousand: ",",
+            symbol: '$',
+            decimal: '.',
+            thousand: ',',
             precision: 2,
-            format: "%s%v"
+            format: '%s%v'
           });
         }
 
-        console.log("amount", amount);
+        console.log('amount', amount);
 
         if (bits) {
           switch (fromCurrency) {
-            case "BCH":
-              fromCurrency = "bits";
+            case 'BCH':
+              fromCurrency = 'bits';
               break;
           }
           switch (to) {
-            case "BCH":
-              to = "bits";
+            case 'BCH':
+              to = 'bits';
               break;
           }
 
-          if (fromCurrency == "USD") {
+          if (fromCurrency == 'USD') {
             let bits = data.price * 1000000;
 
             price = currency.format(bits, {
-              symbol: "",
-              decimal: "",
-              thousand: ",",
+              symbol: '',
+              decimal: '',
+              thousand: ',',
               precision: 0,
-              format: "%s%v"
+              format: '%s%v'
             });
           } else {
             let bits = data.price / 1000000;
 
             price = currency.format(bits, {
-              symbol: "$",
-              decimal: ".",
-              thousand: ",",
+              symbol: '$',
+              decimal: '.',
+              thousand: ',',
               precision: 2,
-              format: "%s%v"
+              format: '%s%v'
             });
           }
         }
@@ -358,20 +373,23 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `usage: convert (amount) (currency) to (currency)`,
+          {
+            disable_notification: true
+          }
+        );
       }
     });
   }
 
   formatPrice(x) {
     let price = currency.format(x, {
-      symbol: "$",
-      decimal: ".",
-      thousand: ",",
+      symbol: '$',
+      decimal: '.',
+      thousand: ',',
       precision: 2,
-      format: "%s%v"
+      format: '%s%v'
     });
 
     return price;
