@@ -138,40 +138,34 @@ class Bitcoin {
     return;
   }
 
-  async translateAddress(ctx, noprefix = false) {
-    let address = ctx.match[0];
-    let input;
+  async translateAddress(ctx) {
+    let address = ctx.match.input;
 
-    if (ctx.match['index'] <= 20 && ctx.match['index'] >= 12) {
-      address = ctx.match.input;
+    let prefix = new RegExp('bitcoincash');
+
+    let check = address.substring(0, 1);
+
+    if (check == '1' || check == '3') {
+      let string = await this.convertAddress(ctx, address, 'legacy');
+      return ctx.replyWithHTML(`${string}`, {
+        disable_notification: true
+      });
     }
-    input = ctx.match.input;
-    if (noprefix) {
-      address = `bitcoincash:${address}`;
-      input = address;
+    if (check == 'C' || check == 'H') {
+      let string = await this.convertAddress(ctx, address, 'bitpay');
+      return ctx.replyWithHTML(`${string}`, {
+        disable_notification: true
+      });
     }
+    if (check == 'b' || check == 'q' || check == 'p') {
+      if (!prefix.test(address)) {
+        address = `bitcoincash:${address}`;
+      }
 
-    if (input == address) {
-      let check = address.substring(0, 1);
-
-      if (check == '1' || check == '3') {
-        let string = await this.convertAddress(ctx, address, 'legacy');
-        return ctx.replyWithHTML(`${string}`, {
-          disable_notification: true
-        });
-      }
-      if (check == 'C' || check == 'H') {
-        let string = await this.convertAddress(ctx, address, 'bitpay');
-        return ctx.replyWithHTML(`${string}`, {
-          disable_notification: true
-        });
-      }
-      if (check == 'b' || check == 'B') {
-        let string = await this.convertAddress(ctx, address, 'cash');
-        return ctx.replyWithHTML(`${string}`, {
-          disable_notification: true
-        });
-      }
+      let string = await this.convertAddress(ctx, address, 'cash');
+      return ctx.replyWithHTML(`${string}`, {
+        disable_notification: true
+      });
     }
   }
 
@@ -192,20 +186,10 @@ class Bitcoin {
         let check = string.charAt(12);
 
         if (check == 'p') {
-          let pubscripthash = Address.fromString(
-            string,
-            'mainnet',
-            'scripthash',
-            CashAddrFormat
-          );
+          let pubscripthash = Address.fromString(string, 'mainnet', 'scripthash', CashAddrFormat);
           translated = pubscripthash.toString();
         } else if (check == 'q') {
-          let cashaddr = Address.fromString(
-            string,
-            'mainnet',
-            'pubkeyhash',
-            CashAddrFormat
-          );
+          let cashaddr = Address.fromString(string, 'mainnet', 'pubkeyhash', CashAddrFormat);
           translated = cashaddr.toString();
         }
 
@@ -373,12 +357,9 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(
-          `usage: convert (amount) (currency) to (currency)`,
-          {
-            disable_notification: true
-          }
-        );
+        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
+          disable_notification: true
+        });
       }
     });
   }

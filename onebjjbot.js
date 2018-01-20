@@ -149,9 +149,7 @@ bot.hears(/translate (.+)/i, ctx => {
   if (ctx.message.reply_to_message) {
     google.translate(ctx);
   } else {
-    return ctx.reply(
-      'usage: reply to a message with "translate <foreignlanguage>"'
-    );
+    return ctx.reply('usage: reply to a message with "translate <foreignlanguage>"');
   }
 });
 
@@ -175,12 +173,8 @@ bot.command('stats', ctx => {
 bot.hears(/[13CH][a-km-zA-HJ-NP-Z0-9]{30,33}/i, ctx => {
   return bitcoin.translateAddress(ctx);
 });
-bot.hears(/bitcoincash:.*/gi, ctx => {
+bot.hears(/^((?:bitcoincash):)?(?:[023456789acdefghjklmnpqrstuvwxyz]){42}$/gi, ctx => {
   return bitcoin.translateAddress(ctx);
-});
-
-bot.hears(/[pq].{38,48}/gi, ctx => {
-  return bitcoin.translateAddress(ctx, true);
 });
 
 bot.on('pinned_message', ctx => {
