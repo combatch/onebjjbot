@@ -100,7 +100,7 @@ bot.hears(/\gifs (.+)/i, ctx => {
   return google.giftest(ctx);
 });
 
-bot.hears(/\youtube (.+)/i, ctx => {
+bot.hears(/\/youtube (.+)/i, ctx => {
   return google.searchYoutube(ctx);
 });
 
