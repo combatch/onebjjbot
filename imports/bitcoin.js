@@ -186,10 +186,10 @@ class Bitcoin {
         let check = string.charAt(12);
 
         if (check == 'p') {
-          let pubscripthash = Address.fromString(string, 'mainnet', 'scripthash', CashAddrFormat);
+          let pubscripthash = Address.fromString(string, 'livenet', 'scripthash', CashAddrFormat);
           translated = pubscripthash.toString();
         } else if (check == 'q') {
-          let cashaddr = Address.fromString(string, 'mainnet', 'pubkeyhash', CashAddrFormat);
+          let cashaddr = Address.fromString(string, 'livenet', 'pubkeyhash', CashAddrFormat);
           translated = cashaddr.toString();
         }
 
