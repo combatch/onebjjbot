@@ -10,7 +10,6 @@ let currency = require('currency-formatter');
 let axios = require('axios');
 
 let translate = require('npm-address-translator');
-const bitcoinCash = require('bitcoincashjs');
 
 const ss = new ScreenShots();
 
@@ -56,7 +55,7 @@ class Bitcoin {
     let fees = await this.getFees(ctx);
     let utxo = await this.getUnconfirmed(ctx);
 
-    let est = 250 * fees / 100000000;
+    let est = (250 * fees) / 100000000;
 
     let estimated = await this.modularConvert('BTC', 'USD', est);
     estimated = this.formatPrice(estimated);
@@ -83,6 +82,25 @@ class Bitcoin {
       .catch(err => {
         winston.log('error', 'failed in getFees', err);
       });
+  }
+
+  async getCashAccount(ctx) {
+    let username = ctx.match[1];
+    let number = ctx.match[2];
+    number = number.replace('#', '');
+
+    let addr = await axios
+      .get(`https://krave.xyz/api/lookup/${username}/${number}`)
+      .then(x => {
+        console.log('data', x.data);
+        return x.data.address;
+      })
+      .catch(err => {
+        winston.log('error', 'failed in getCashAccount', err);
+      });
+    if (addr !== undefined) {
+      return ctx.replyWithHTML(`${addr}`, { disable_notification: true });
+    }
   }
 
   async getUnconfirmed(ctx) {
@@ -186,10 +204,20 @@ class Bitcoin {
         let check = string.charAt(12);
 
         if (check == 'p') {
-          let pubscripthash = Address.fromString(string, 'livenet', 'scripthash', CashAddrFormat);
+          let pubscripthash = Address.fromString(
+            string,
+            'livenet',
+            'scripthash',
+            CashAddrFormat
+          );
           translated = pubscripthash.toString();
         } else if (check == 'q') {
-          let cashaddr = Address.fromString(string, 'livenet', 'pubkeyhash', CashAddrFormat);
+          let cashaddr = Address.fromString(
+            string,
+            'livenet',
+            'pubkeyhash',
+            CashAddrFormat
+          );
           translated = cashaddr.toString();
         }
 
@@ -357,9 +385,12 @@ class Bitcoin {
           disable_notification: true
         });
       } else {
-        return ctx.replyWithHTML(`usage: convert (amount) (currency) to (currency)`, {
-          disable_notification: true
-        });
+        return ctx.replyWithHTML(
+          `usage: convert (amount) (currency) to (currency)`,
+          {
+            disable_notification: true
+          }
+        );
       }
     });
   }

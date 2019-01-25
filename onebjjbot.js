@@ -13,7 +13,6 @@ let Sounds = require('./imports/sounds');
 let Files = require('./imports/fileStreams');
 let Dictionary = require('./imports/dictionary');
 let Job = require('./imports/jobs');
-let Instagram = require('./imports/instagram');
 let path = require('path');
 let _ = require('lodash');
 
@@ -34,7 +33,6 @@ const crypto = new Crypto();
 const sounds = new Sounds();
 const file = new Files();
 const dictionary = new Dictionary();
-const instagram = new Instagram();
 
 // migrations.migrateLatest();
 
@@ -108,8 +106,16 @@ bot.hears(/snd (.+)/i, ctx => {
   return sounds.getSoundy(ctx);
 });
 
+// bot.hears(/^([a-zA-Z0-9_]+)(#([0-9]+)(\.([0-9]+))?)/gi, ctx => {
+//   console.log('here');
+//   return bitcoin.getCashAccount(ctx);
+// });
+
 bot.hears(/(?:^|\W)oss(?:$|\W)/i, ctx => {
   return sounds.getIndividualSound(ctx, 1121);
+});
+bot.hears(/^([a-zA-Z0-9_]+)(#([0-9]+)(([0-9]+)))/i, ctx => {
+  return bitcoin.getCashAccount(ctx);
 });
 bot.hears(/crickets/i, ctx => {
   return sounds.getIndividualSound(ctx, 1122);
@@ -137,10 +143,6 @@ bot.hears(/\/ud (.+)/i, ctx => {
   return dictionary.urbanDictionary(ctx);
 });
 
-// bot.hears(/\ig (.+)/i, ctx => {
-//   return instagram.handleIG(ctx);
-// });
-
 bot.hears(/\/define (.+)/i, ctx => {
   return dictionary.pearsonDictionary(ctx);
 });
@@ -149,7 +151,9 @@ bot.hears(/translate (.+)/i, ctx => {
   if (ctx.message.reply_to_message) {
     google.translate(ctx);
   } else {
-    return ctx.reply('usage: reply to a message with "translate <foreignlanguage>"');
+    return ctx.reply(
+      'usage: reply to a message with "translate <foreignlanguage>"'
+    );
   }
 });
 
@@ -173,9 +177,12 @@ bot.command('stats', ctx => {
 bot.hears(/[13CH][a-km-zA-HJ-NP-Z0-9]{30,33}/i, ctx => {
   return bitcoin.translateAddress(ctx);
 });
-bot.hears(/^((?:bitcoincash):)?(?:[023456789acdefghjklmnpqrstuvwxyz]){42}$/gi, ctx => {
-  return bitcoin.translateAddress(ctx);
-});
+bot.hears(
+  /^((?:bitcoincash):)?(?:[023456789acdefghjklmnpqrstuvwxyz]){42}$/gi,
+  ctx => {
+    return bitcoin.translateAddress(ctx);
+  }
+);
 
 bot.on('pinned_message', ctx => {
   let p = Promise.resolve(user.checkStickyId(ctx));
