@@ -172,6 +172,7 @@ class Google {
     let filtered = await this.cleanImageResults(googleResults);
 
     if (!filtered) {
+      await ctx.telegram.deleteMessage(ChatId, MessageId);
       return ctx.replyWithHTML(`no valid results found for <i>${query}</i>`, {
         reply_to_message_id: replyTo
       });
@@ -180,8 +181,12 @@ class Google {
     await ctx.replyWithChatAction('upload_photo');
 
     let valid = await this.recursivePhotos(filtered);
-
-    await ctx.replyWithPhoto({ url: valid.url });
+    console.log('valid', valid);
+    let wait = await ctx.replyWithPhoto({ url: valid.url });
+    console.log('wait', wait);
+    if (wait === undefined) {
+      await ctx.telegram.deleteMessage(ChatId, MessageId);
+    }
     return ctx.telegram.deleteMessage(ChatId, MessageId);
   }
 

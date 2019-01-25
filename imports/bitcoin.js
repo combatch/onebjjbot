@@ -85,6 +85,7 @@ class Bitcoin {
   }
 
   async getCashAccount(ctx) {
+    let replyTo = ctx.update.message.message_id;
     let username = ctx.match[1];
     let number = ctx.match[2];
     number = number.replace('#', '');
@@ -99,7 +100,10 @@ class Bitcoin {
         winston.log('error', 'failed in getCashAccount', err);
       });
     if (addr !== undefined) {
-      return ctx.replyWithHTML(`${addr}`, { disable_notification: true });
+      return ctx.replyWithHTML(`${addr}`, {
+        reply_to_message_id: replyTo,
+        disable_notification: true
+      });
     }
   }
 
