@@ -222,61 +222,61 @@ bot.command('leaderboard', ctx => {
 });
 
 // if replying with emoji, auto increment
-bot.on('message', ctx => {
-  let savage = 'savage';
-  let savageRegEx = new RegExp(savage, 'ig');
-  let lul = 'lul';
-  let lulRegEx = new RegExp(lul, 'ig');
-  //let lol = "l+o+l";
-  let lol = '(?:^|W)lol(?:$|W)';
-  let lolRegEx = new RegExp(lol, 'i');
-  //let lolRegEx = new RegExp(lol, "ig");
-  let upvote = 'upvote';
-  let upvoteRegEx = new RegExp(upvote, 'ig');
-  let lmao = 'l+m+a+o+';
-  let lmaoRegEx = new RegExp(lmao, 'ig');
-  let haha = 'h+a+h+';
-  let hahaRegEx = new RegExp(haha, 'ig');
+// bot.on('message', ctx => {
+//   let savage = 'savage';
+//   let savageRegEx = new RegExp(savage, 'ig');
+//   let lul = 'lul';
+//   let lulRegEx = new RegExp(lul, 'ig');
+//   //let lol = "l+o+l";
+//   let lol = '(?:^|W)lol(?:$|W)';
+//   let lolRegEx = new RegExp(lol, 'i');
+//   //let lolRegEx = new RegExp(lol, "ig");
+//   let upvote = 'upvote';
+//   let upvoteRegEx = new RegExp(upvote, 'ig');
+//   let lmao = 'l+m+a+o+';
+//   let lmaoRegEx = new RegExp(lmao, 'ig');
+//   let haha = 'h+a+h+';
+//   let hahaRegEx = new RegExp(haha, 'ig');
 
-  if (ctx.message.reply_to_message) {
-    // if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == 'savage' || ctx.message.text == '😂') {
+//   if (ctx.message.reply_to_message) {
+//     // if (lolRegEx.test(ctx.message.text) || lulRegEx.test(ctx.message.text) || upvoteRegEx.test(ctx.message.text) || lmaoRegEx.test(ctx.message.text) ||hahaRegEx.test(ctx.message.text) || ctx.message.text == 'haha' || ctx.message.text == 'savage' || ctx.message.text == '😂') {
 
-    if (
-      lolRegEx.test(ctx.message.text) ||
-      upvoteRegEx.test(ctx.message.text) ||
-      lmaoRegEx.test(ctx.message.text) ||
-      savageRegEx.test(ctx.message.text) ||
-      ctx.message.text == '😂'
-    ) {
-      let userId = ctx.from.id;
-      let replyTo = ctx.message.reply_to_message.from.id;
-      let originalMessageId = ctx.message.reply_to_message.message_id;
+//     if (
+//       lolRegEx.test(ctx.message.text) ||
+//       upvoteRegEx.test(ctx.message.text) ||
+//       lmaoRegEx.test(ctx.message.text) ||
+//       savageRegEx.test(ctx.message.text) ||
+//       ctx.message.text == '😂'
+//     ) {
+//       let userId = ctx.from.id;
+//       let replyTo = ctx.message.reply_to_message.from.id;
+//       let originalMessageId = ctx.message.reply_to_message.message_id;
 
-      if (replyTo !== bot.options.id) {
-        if (userId == replyTo) {
-          return ctx.reply('cant vote for yourself');
-        }
+//       if (replyTo !== bot.options.id) {
+//         if (userId == replyTo) {
+//           return ctx.reply('cant vote for yourself');
+//         }
 
-        return ctx.reply(
-          '<i>choose a button to upvote</i>',
-          Extra.inReplyTo(originalMessageId)
-            .notifications(false)
-            .HTML()
-            .markup(
-              Markup.inlineKeyboard([
-                Markup.callbackButton('😂', 'tearsofjoy'),
-                Markup.callbackButton('👍', 'thumbsup'),
-                Markup.callbackButton('❤', 'heart'),
-                Markup.callbackButton('🔥', 'fire'),
-                // Markup.callbackButton('👏', 'clap'),
-                Markup.callbackButton('💯', 'hundred')
-              ])
-            )
-        );
-      }
-    }
-  }
-});
+//         return ctx.reply(
+//           '<i>choose a button to upvote</i>',
+//           Extra.inReplyTo(originalMessageId)
+//             .notifications(false)
+//             .HTML()
+//             .markup(
+//               Markup.inlineKeyboard([
+//                 Markup.callbackButton('😂', 'tearsofjoy'),
+//                 Markup.callbackButton('👍', 'thumbsup'),
+//                 Markup.callbackButton('❤', 'heart'),
+//                 Markup.callbackButton('🔥', 'fire'),
+//                 // Markup.callbackButton('👏', 'clap'),
+//                 Markup.callbackButton('💯', 'hundred')
+//               ])
+//             )
+//         );
+//       }
+//     }
+//   }
+// });
 
 bot.action('tearsofjoy', (ctx, next) => {
   let data = ctx.update.callback_query.data;
