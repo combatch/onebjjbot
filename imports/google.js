@@ -181,9 +181,7 @@ class Google {
     await ctx.replyWithChatAction('upload_photo');
 
     let valid = await this.recursivePhotos(filtered);
-    console.log('valid', valid);
     let wait = await ctx.replyWithPhoto({ url: valid.url });
-    console.log('wait', wait);
     if (wait === undefined) {
       await ctx.telegram.deleteMessage(ChatId, MessageId);
     }
@@ -193,10 +191,11 @@ class Google {
   async recursivePhotos(filtered) {
     let status;
     for (const each of filtered) {
-      while (!status) {
-        status = await this.checkValid(each.url);
+      status = await this.checkValid(each.url);
+
+      if (status) {
+        return each;
       }
-      return each;
     }
   }
 
@@ -225,7 +224,8 @@ class Google {
         }
       })
       .catch(err => {
-        console.log('err', err);
+        console.log('err here', err);
+        return false;
       });
   }
 
