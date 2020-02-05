@@ -260,6 +260,9 @@ class Bitcoin {
   modularConvert(fromCurrency, to, amount) {
     return axios
       .get(`https://apiv2.bitcoinaverage.com/convert/global`, {
+        headers: {
+          'x-ba-key': conf.apis.btcaveragekey
+        },
         params: {
           from: fromCurrency,
           to: to,
