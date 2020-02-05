@@ -310,7 +310,10 @@ class Bitcoin {
       method: 'GET',
       url: 'https://apiv2.bitcoinaverage.com/convert/global',
       qs: { from: fromCurrency, to: to, amount: amount },
-      headers: { 'cache-control': 'no-cache' }
+      headers: {
+        'cache-control': 'no-cache',
+        'x-ba-key': conf.apis.btcaveragekey
+      }
     };
 
     request(options, function(error, response, body) {
