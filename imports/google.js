@@ -8,7 +8,7 @@ let fs = require('fs');
 let YouTube = require('youtube-node');
 let jsonfile = require('jsonfile');
 const { URL } = require('url');
-
+const DOMPurify = require('isomorphic-dompurify');
 const Telegraf = require('telegraf');
 const { Extra, memorySession, Markup } = Telegraf;
 
@@ -49,7 +49,7 @@ class Google {
       headers: { 'cache-control': 'no-cache' }
     };
 
-    request(options, function(error, response, body) {
+    request(options, function (error, response, body) {
       if (error) {
         console.log('debug', error);
       }
@@ -69,6 +69,8 @@ class Google {
     let replyTo = ctx.update.message.message_id;
     let chatId = ctx.update.message.chat.id;
 
+    query = DOMPurify.sanitize(query);
+
     let newContext = await this.insertLoadingGif(ctx);
     let gifChatId = newContext.chat.id;
     let gifMessageId = newContext.message_id;
@@ -80,7 +82,7 @@ class Google {
 
     let valid = await this.recursiveAlbum(filtered);
 
-    let mapped = valid.map(x => {
+    let mapped = valid.map((x) => {
       let obj = {};
       obj['media'] = x.url;
       obj['type'] = 'photo';
@@ -102,6 +104,8 @@ class Google {
     let replyTo = ctx.update.message.message_id;
     let chatId = ctx.update.message.chat.id;
 
+    query = DOMPurify.sanitize(query);
+
     let newContext = await this.insertLoadingGif(ctx);
     let gifChatId = newContext.chat.id;
     let gifMessageId = newContext.message_id;
@@ -119,7 +123,7 @@ class Google {
     let filtered = filterTenorResults(data);
     filtered = filtered.slice(0, 3);
 
-    let mapped = filtered.map(x => {
+    let mapped = filtered.map((x) => {
       let obj = {};
       obj['media'] = { url: x.url };
       obj['type'] = 'video';
@@ -138,16 +142,12 @@ class Google {
   async getImgResults(query) {
     return axios
       .get(
-        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${
-          conf.apis.CX
-        }&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${
-          conf.apis.IMAGE
-        }`
+        `https://www.googleapis.com/customsearch/v1?q=${query}&cx=${conf.apis.CX}&imgSize=large&imgType=photo&num=7&safe=off&searchType=image&key=${conf.apis.IMAGE}`
       )
-      .then(x => {
+      .then((x) => {
         return x.data;
       })
-      .catch(err => {
+      .catch((err) => {
         winston.log('error', 'failed in getImgResults', err);
       });
   }
@@ -163,6 +163,8 @@ class Google {
     let query = ctx.match[1].replace(/[?=]/g, ' ');
     let replyTo = ctx.update.message.message_id;
     let chatId = ctx.update.message.chat.id;
+
+    query = DOMPurify.sanitize(query);
 
     let newContext = await this.insertLoadingGif(ctx);
     let ChatId = newContext.chat.id;
@@ -222,10 +224,6 @@ class Google {
         } else {
           return true;
         }
-      })
-      .catch(err => {
-        console.log('err here', err);
-        return false;
       });
   }
 
@@ -276,10 +274,10 @@ class Google {
       .get(
         `https://api.tenor.co/v1/search?q=${query}&key=41S2CSB7PHJ7&safesearch=off`
       )
-      .then(x => {
+      .then((x) => {
         return x.data;
       })
-      .catch(err => {
+      .catch((err) => {
         winston.log('error', 'failed in getGifResults', err);
       });
   }
@@ -289,6 +287,8 @@ class Google {
     let replyTo = ctx.update.message.message_id;
 
     let newContext = await this.insertLoadingGif(ctx);
+
+    query = DOMPurify.sanitize(query);
 
     let chatId = newContext.chat.id;
     let messageId = newContext.message_id;
@@ -323,7 +323,7 @@ class Google {
     let query = ctx.match[1].replace(/[?=]/g, ' ');
     let replyTo = ctx.update.message.message_id;
 
-    youTube.search(query, 3, function(error, data) {
+    youTube.search(query, 3, function (error, data) {
       if (error) {
         console.log('debug', error);
       }
@@ -349,7 +349,7 @@ class Google {
 }
 
 function filterYoutubeResults(data) {
-  let filtered = data.items.map(function(vid) {
+  let filtered = data.items.map(function (vid) {
     let obj = {};
 
     if (vid.id.kind == 'youtube#video') {
@@ -363,7 +363,7 @@ function filterYoutubeResults(data) {
 }
 
 function filterGifResults(data) {
-  let filtered = data.items.map(function(gif) {
+  let filtered = data.items.map(function (gif) {
     let obj = {};
 
     if (gif.image.byteSize < '2497152' && gif.image.byteSize > '101788') {
@@ -380,7 +380,7 @@ function filterGifResults(data) {
 function filterImageResults(data) {
   let bannedHosts = 'photobucket.com';
   let allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.bmp'];
-  let filtered = data.items.map(function(image) {
+  let filtered = data.items.map(function (image) {
     let obj = {};
     let imgURL = image.link;
     let extension = path.extname(imgURL);
@@ -405,7 +405,7 @@ function filterImageResults(data) {
 }
 
 function filterTenorResults(data) {
-  let filtered = data.results.map(function(gif) {
+  let filtered = data.results.map(function (gif) {
     let obj = {};
     obj['url'] = gif.media[0]['mp4']['url'];
     return obj;
@@ -420,9 +420,9 @@ function isInArray(value, array) {
 }
 
 function validImageCheck(urlsObj) {
-  let result = urlsObj.map(function(each) {
+  let result = urlsObj.map(function (each) {
     let obj = {};
-    return request(each, function(error, response, body) {
+    return request(each, function (error, response, body) {
       if (!error && response.statusCode === 200) {
         winston.log('debug', 'each is', each);
         return true;

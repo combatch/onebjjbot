@@ -47,7 +47,7 @@ bot.use((ctx, next) => {
   });
 });
 
-bot.telegram.getMe().then(botInfo => {
+bot.telegram.getMe().then((botInfo) => {
   bot.options.id = botInfo.id;
   bot.options.username = botInfo.username;
 });
@@ -55,54 +55,54 @@ bot.telegram.getMe().then(botInfo => {
 // to mention username
 //<a href="tg://user?id=${userID}">${first_name}</a>
 
-bot.hears(/\/winners/, ctx => {
-  return crypto.getBiggestWinners(ctx);
-});
+// bot.hears(/\/winners/, ctx => {
+//   return crypto.getBiggestWinners(ctx);
+// });
 
-bot.hears(/\/losers/, ctx => {
-  return crypto.getBiggestLosers(ctx);
-});
+// bot.hears(/\/losers/, ctx => {
+//   return crypto.getBiggestLosers(ctx);
+// });
 
-bot.hears(/\/volume/, ctx => {
+bot.hears(/\/volume/, (ctx) => {
   return crypto.getCoinCapVolume(ctx);
 });
 
-bot.command('coinbase', ctx => {
-  return bitcoin.getCoinbaseExchangeRate(ctx);
-});
+// bot.command('coinbase', ctx => {
+//   return bitcoin.getCoinbaseExchangeRate(ctx);
+// });
 
-bot.command('sounds', ctx => {
+bot.command('sounds', (ctx) => {
   return sounds.returnMenu(ctx);
 });
 
-bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, ctx => {
+bot.hears(/\/convert (.+)(.[a-z]{3})( to)(.[a-z]{3})/i, (ctx) => {
   return bitcoin.convertToBitcoin(ctx);
 });
-bot.hears(/\/btc/i, ctx => {
-  return crypto.getBitcoinPrices(ctx);
-});
+// bot.hears(/\/btc/i, ctx => {
+//   return crypto.getBitcoinPrices(ctx);
+// });
 
-bot.hears(/\/chart/i, ctx => {
-  return bitcoin.getBitcoinityChart(ctx);
-});
+// bot.hears(/\/chart/i, ctx => {
+//   return bitcoin.getBitcoinityChart(ctx);
+// });
 
-bot.hears(/\/fees/i, ctx => {
+bot.hears(/\/fees/i, (ctx) => {
   return bitcoin.getStats(ctx);
 });
 
-bot.hears(/\gif (.+)/i, ctx => {
+bot.hears(/\gif (.+)/i, (ctx) => {
   return google.tenorSearch(ctx);
 });
 
-bot.hears(/\gifs (.+)/i, ctx => {
+bot.hears(/\gifs (.+)/i, (ctx) => {
   return google.giftest(ctx);
 });
 
-bot.hears(/\/youtube (.+)/i, ctx => {
+bot.hears(/\/youtube (.+)/i, (ctx) => {
   return google.searchYoutube(ctx);
 });
 
-bot.hears(/snd (.+)/i, ctx => {
+bot.hears(/snd (.+)/i, (ctx) => {
   return sounds.getSoundy(ctx);
 });
 
@@ -111,43 +111,43 @@ bot.hears(/snd (.+)/i, ctx => {
 //   return bitcoin.getCashAccount(ctx);
 // });
 
-bot.hears(/(?:^|\W)oss(?:$|\W)/i, ctx => {
+bot.hears(/(?:^|\W)oss(?:$|\W)/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1121);
 });
-bot.hears(/^([a-zA-Z0-9_]+)(#([0-9]+)(([0-9]+)))/i, ctx => {
+bot.hears(/^([a-zA-Z0-9_]+)(#([0-9]+)(([0-9]+)))/i, (ctx) => {
   return bitcoin.getCashAccount(ctx);
 });
-bot.hears(/crickets/i, ctx => {
+bot.hears(/crickets/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1122);
 });
-bot.hears(/airhorn/i, ctx => {
+bot.hears(/airhorn/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1124);
 });
 
-bot.hears(/shie+t/i, ctx => {
+bot.hears(/shie+t/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1125);
 });
-bot.hears(/caralho/i, ctx => {
+bot.hears(/caralho/i, (ctx) => {
   return sounds.getIndividualSound(ctx, 1126);
 });
 
-bot.hears(/\imgs (.+)/i, ctx => {
+bot.hears(/\imgs (.+)/i, (ctx) => {
   return google.asyncimgSearch(ctx);
 });
 
-bot.hears(/\img (.+)/i, ctx => {
+bot.hears(/\img (.+)/i, (ctx) => {
   return google.imgSearch(ctx);
 });
 
-bot.hears(/\/ud (.+)/i, ctx => {
+bot.hears(/\/ud (.+)/i, (ctx) => {
   return dictionary.urbanDictionary(ctx);
 });
 
-bot.hears(/\/define (.+)/i, ctx => {
+bot.hears(/\/define (.+)/i, (ctx) => {
   return dictionary.pearsonDictionary(ctx);
 });
 
-bot.hears(/translate (.+)/i, ctx => {
+bot.hears(/translate (.+)/i, (ctx) => {
   if (ctx.message.reply_to_message) {
     google.translate(ctx);
   } else {
@@ -157,36 +157,36 @@ bot.hears(/translate (.+)/i, ctx => {
   }
 });
 
-bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, ctx => {
+bot.hears(/stocks (.{1,5})/i, stocksMiddleware.getStocks, (ctx) => {
   winston.log('debug', 'symbol: ' + ctx.match[1]);
 });
 
-bot.hears(/\/ss (.+)/, ctx => {
+bot.hears(/\/ss (.+)/, (ctx) => {
   const ss = new ScreenShots();
   return ss.createScreenshot(ctx, '');
 });
 
-bot.command('register', ctx => {
+bot.command('register', (ctx) => {
   return user.registerUser(ctx);
 });
 
-bot.command('stats', ctx => {
+bot.command('stats', (ctx) => {
   return user.getMostUpvotedPost(ctx);
 });
 
-bot.hears(/[13CH][a-km-zA-HJ-NP-Z0-9]{30,33}/i, ctx => {
+bot.hears(/[13CH][a-km-zA-HJ-NP-Z0-9]{30,33}/i, (ctx) => {
   return bitcoin.translateAddress(ctx);
 });
 bot.hears(
   /^((?:bitcoincash):)?(?:[023456789acdefghjklmnpqrstuvwxyz]){42}$/gi,
-  ctx => {
+  (ctx) => {
     return bitcoin.translateAddress(ctx);
   }
 );
 
-bot.on('pinned_message', ctx => {
+bot.on('pinned_message', (ctx) => {
   let p = Promise.resolve(user.checkStickyId(ctx));
-  p.then(exists => {
+  p.then((exists) => {
     if (exists) {
       return user.updateStickyId(ctx);
     } else {
@@ -195,23 +195,23 @@ bot.on('pinned_message', ctx => {
   });
 });
 
-bot.on('migrate_from_chat_id', ctx => {
+bot.on('migrate_from_chat_id', (ctx) => {
   let oldID = ctx.update.message.migrate_from_chat_id;
   let newID = ctx.update.message.chat.id;
 
   let p = Promise.resolve(user.updateGroupId(oldID, newID));
-  p.then(exists => {
+  p.then((exists) => {
     ctx.reply(`converted to supergroup successfully.`);
   });
 });
 
-bot.on(['video', 'document'], ctx => {
+bot.on(['video', 'document'], (ctx) => {
   return file.convertToMp4(ctx);
 });
 
-bot.command('leaderboard', ctx => {
+bot.command('leaderboard', (ctx) => {
   let p = Promise.resolve(user.getStickiedMessageId(ctx));
-  p.then(messageId => {
+  p.then((messageId) => {
     if (_.isUndefined(messageId)) {
       winston.log('info', 'no pinned message, posting leaderboard');
       return user.getLeaderboard(ctx);
@@ -290,7 +290,7 @@ bot.action('tearsofjoy', (ctx, next) => {
     })
     .then(() => {
       let p = Promise.resolve(user.getStickiedMessageId(ctx));
-      p.then(messageId => {
+      p.then((messageId) => {
         if (!_.isUndefined(messageId)) {
           return user.updateLeaderboard(ctx, group, title);
         }
@@ -310,7 +310,7 @@ bot.action('thumbsup', (ctx, next) => {
     })
     .then(() => {
       let p = Promise.resolve(user.getStickiedMessageId(ctx));
-      p.then(messageId => {
+      p.then((messageId) => {
         if (!_.isUndefined(messageId)) {
           return user.updateLeaderboard(ctx, group, title);
         }
@@ -330,7 +330,7 @@ bot.action('heart', (ctx, next) => {
     })
     .then(() => {
       let p = Promise.resolve(user.getStickiedMessageId(ctx));
-      p.then(messageId => {
+      p.then((messageId) => {
         if (!_.isUndefined(messageId)) {
           return user.updateLeaderboard(ctx, group, title);
         }
@@ -350,7 +350,7 @@ bot.action('fire', (ctx, next) => {
     })
     .then(() => {
       let p = Promise.resolve(user.getStickiedMessageId(ctx));
-      p.then(messageId => {
+      p.then((messageId) => {
         if (!_.isUndefined(messageId)) {
           return user.updateLeaderboard(ctx, group, title);
         }
@@ -389,7 +389,7 @@ bot.action('hundred', (ctx, next) => {
     })
     .then(() => {
       let p = Promise.resolve(user.getStickiedMessageId(ctx));
-      p.then(messageId => {
+      p.then((messageId) => {
         if (!_.isUndefined(messageId)) {
           return user.updateLeaderboard(ctx, group, title);
         }
@@ -398,7 +398,7 @@ bot.action('hundred', (ctx, next) => {
     .then(next);
 });
 
-bot.catch(err => {
+bot.catch((err) => {
   winston.log('debug', 'in bot catch error');
   winston.log('error', err);
 });
