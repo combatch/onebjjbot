@@ -132,11 +132,19 @@ bot.hears(/caralho/i, (ctx) => {
 });
 
 bot.hears(/\imgs (.+)/i, (ctx) => {
-  return google.asyncimgSearch(ctx);
+  try {
+    return google.asyncimgSearch(ctx);
+  } catch (error) {
+    console.log('failed line 139', error);
+  }
 });
 
 bot.hears(/\img (.+)/i, (ctx) => {
-  return google.imgSearch(ctx);
+  try {
+    return google.imgSearch(ctx);
+  } catch (e) {
+    console.log('failed line 142', e);
+  }
 });
 
 bot.hears(/\/ud (.+)/i, (ctx) => {
@@ -205,9 +213,9 @@ bot.on('migrate_from_chat_id', (ctx) => {
   });
 });
 
-bot.on(['video', 'document'], (ctx) => {
-  return file.convertToMp4(ctx);
-});
+// bot.on(['video', 'document'], (ctx) => {
+//   return file.convertToMp4(ctx);
+// });
 
 bot.command('leaderboard', (ctx) => {
   let p = Promise.resolve(user.getStickiedMessageId(ctx));
