@@ -40,7 +40,7 @@
     "jsonfile": "^4.0.0",
     "knex": "^0.14.2",
     "lodash": "^4.17.4",
-    "moment": "^2.19.3",
+    "moment": "^2.29.4",
     "node-horseman": "^3.3.0",
     "nodemon": "^1.12.5",
     "npm-address-translator": "latest",
