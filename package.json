@@ -38,7 +38,7 @@
     "isomorphic-dompurify": "^0.15.0",
     "jimp": "^0.2.28",
     "jsonfile": "^4.0.0",
-    "knex": "^0.14.2",
+    "knex": "^2.4.0",
     "lodash": "^4.17.4",
     "moment": "^2.19.3",
     "node-horseman": "^3.3.0",
